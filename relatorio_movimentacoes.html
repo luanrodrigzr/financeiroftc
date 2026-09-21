@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Relatório de Movimentações</title>
+<style>
+  :root {
+    --blue: #1196D2;
+    --blue-light: #8ADCF8;
+    --pink: #EC298F;
+    --pink-light: #F7B6D8;
+
+    --bg: #f4f6f8;
+    --surface: #ffffff;
+    --border: #dde3e8;
+    --text: #1a222c;
+    --muted: #6b7684;
+    --input-bg: #ffffff;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #13171c;
+      --surface: #1c2229;
+      --border: #303941;
+      --text: #e7ebee;
+      --muted: #9aa5b1;
+      --input-bg: #232a31;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #13171c;
+    --surface: #1c2229;
+    --border: #303941;
+    --text: #e7ebee;
+    --muted: #9aa5b1;
+    --input-bg: #232a31;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 1080px; margin: 0 auto; padding: 18px 14px 48px; }
+
+  header.top {
+    background: linear-gradient(135deg, var(--blue), var(--pink));
+    color: #ffffff;
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+  }
+  .header-top-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .logo { max-height: 46px; max-width: 140px; border-radius: 4px; background: #fff; padding: 3px; }
+  header.top h1 { margin: 0; font-size: 1.3rem; letter-spacing: 0.2px; }
+  .header-fields { display: flex; gap: 10px; flex-wrap: wrap; }
+  .header-fields .field { flex: 1; min-width: 150px; }
+  .header-fields label { color: #ffffff; opacity: 0.92; }
+  label { display: block; font-size: 0.75rem; font-weight: bold; color: var(--muted); margin-bottom: 3px; }
+  input, select {
+    width: 100%; padding: 7px 9px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--input-bg); color: var(--text); font-size: 0.9rem; font-family: inherit;
+  }
+  input:focus, select:focus { outline: 2px solid var(--blue); outline-offset: 1px; }
+
+  .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 760px) { .columns { grid-template-columns: 1fr; } }
+
+  .column-heading {
+    font-size: 0.95rem; font-weight: bold; letter-spacing: 0.4px; text-transform: uppercase;
+    padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; color: #fff;
+  }
+  .column-heading.blue { background: var(--blue); }
+  .column-heading.pink { background: var(--pink); }
+
+  .box {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    margin-bottom: 12px; overflow: hidden;
+  }
+  .box-dashed { border-style: dashed; }
+  .box-header {
+    padding: 8px 12px; font-size: 0.85rem; font-weight: bold; color: #fff; display: flex;
+    align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .box.theme-blue .box-header { background: var(--blue); }
+  .box.theme-pink .box-header { background: var(--pink); }
+  .date-tag { font-weight: normal; opacity: 0.9; font-size: 0.78rem; }
+  .badge-previsao {
+    font-size: 0.62rem; font-weight: bold; background: rgba(255,255,255,0.25);
+    padding: 2px 7px; border-radius: 20px; letter-spacing: 0.3px;
+  }
+  .box-body { padding: 12px; }
+
+  .field-row { margin-bottom: 9px; }
+  .field-input-wrap { display: flex; gap: 6px; align-items: center; }
+  .field-input-wrap input { flex: 1; }
+  .hide-btn {
+    border: 1px solid var(--border); background: transparent; color: var(--muted);
+    border-radius: 5px; width: 26px; height: 30px; cursor: pointer; font-size: 0.9rem; flex-shrink: 0;
+  }
+  .hide-btn:hover { color: var(--pink); border-color: var(--pink); }
+  .field-row.field-hidden { display: none; }
+  .restore-link {
+    display: none; font-size: 0.72rem; color: var(--blue); text-decoration: underline;
+    cursor: pointer; margin-bottom: 8px;
+  }
+
+  .readonly-row, .total-row {
+    display: flex; justify-content: space-between; align-items: center; padding: 6px 0; gap: 10px;
+  }
+  .readonly-row label, .total-row label { margin: 0; font-size: 0.82rem; color: var(--text); font-weight: normal; }
+  .readonly-row span, .total-row span { font-weight: bold; white-space: nowrap; }
+  .total-row.grand { border-top: 1px solid var(--border); margin-top: 6px; font-size: 0.95rem; }
+  .box.theme-blue .total-row.grand span { color: var(--blue); }
+  .box.theme-pink .total-row.grand span { color: var(--pink); }
+
+  .sublist { background: var(--bg); border-radius: 8px; padding: 9px; margin: 9px 0; }
+  .sublist-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+  .sublist-header span { font-size: 0.76rem; font-weight: bold; color: var(--muted); text-transform: uppercase; }
+  .add-btn {
+    border: 1px solid var(--blue); background: transparent; color: var(--blue); border-radius: 6px;
+    padding: 3px 9px; font-size: 0.74rem; cursor: pointer;
+  }
+  .box.theme-pink .add-btn { border-color: var(--pink); color: var(--pink); }
+  .add-btn:hover { background: var(--blue); color: #fff; }
+  .box.theme-pink .add-btn:hover { background: var(--pink); }
+  .sub-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
+  .sub-row .desc-input { flex: 1; }
+  .sub-row .value-input { width: 100px; text-align: right; }
+  .sub-row .remove-btn { border: none; background: transparent; color: var(--pink); font-size: 1.05rem; cursor: pointer; padding: 2px 6px; }
+  .subtotal-row {
+    display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: bold;
+    color: var(--muted); padding-top: 4px; border-top: 1px dashed var(--border);
+  }
+
+  .actions { display: flex; gap: 10px; margin: 18px 0 6px; flex-wrap: wrap; }
+  button.primary {
+    background: var(--blue); color: #fff; border: none; border-radius: 8px; padding: 12px 20px;
+    font-size: 0.92rem; font-weight: bold; cursor: pointer;
+  }
+  button.secondary {
+    background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 16px; font-size: 0.88rem; cursor: pointer;
+  }
+  #status-msg { font-size: 0.82rem; min-height: 1.2em; }
+  #status-msg.error { color: var(--pink); }
+  #status-msg.success { color: var(--blue); }
+</style>
+</head>
+<body>
+  <div class="page">
+    <header class="top">
+      <div class="header-top-row">
+        <img id="logo" class="logo" style="display:none;" alt="Logo">
+        <h1>Relatório de Movimentações</h1>
+      </div>
+      <div class="header-fields">
+        <div class="field">
+          <label for="loja">Loja</label>
+          <select id="loja">
+            <option value="Loja 01 – Maciel">Loja 01 – Maciel</option>
+            <option value="Loja 02 – Grechi">Loja 02 – Grechi</option>
+            <option value="Loja 03 – Pinheiros">Loja 03 – Pinheiros</option>
+            <option value="Loja 04 – Boa Esperança">Loja 04 – Boa Esperança</option>
+            <option value="Loja 05 – São Gabriel da Palha">Loja 05 – São Gabriel da Palha</option>
+            <option value="Loja 06 – São Mateus">Loja 06 – São Mateus</option>
+            <option value="Loja 07 – Jaguaré">Loja 07 – Jaguaré</option>
+            <option value="Loja 08 – Lázaro Beira Rio">Loja 08 – Lázaro Beira Rio</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="data-anterior">Data do dia anterior</label>
+          <input type="date" id="data-anterior">
+        </div>
+        <div class="field">
+          <label for="data-hoje">Data de hoje</label>
+          <input type="date" id="data-hoje">
+        </div>
+      </div>
+    </header>
+
+    <div class="columns">
+      <div id="col-bancarias"></div>
+      <div id="col-cofre"></div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="primary" id="btn-pdf">Baixar PDF</button>
+      <button type="button" class="secondary" id="btn-clear">Limpar formulário</button>
+    </div>
+    <p id="status-msg"></p>
+  </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // ================= Config: describes every box on the page =================
+  var CONFIG = {
+    bancarias: {
+      theme: 'blue',
+      heading: 'Movimentações Bancárias',
+      boxes: [
+        {
+          id: 'b-entradas', type: 'normal', title: 'ENTRADAS', dateTag: 'anterior',
+          fields: [
+            { id: 'b_sicredi', label: 'Cartões Sicredi', hideable: true },
+            { id: 'b_itau', label: 'Cartões Itaú', hideable: true },
+            { id: 'b_bradesco', label: 'Cartões Bradesco', hideable: true },
+            { id: 'b_banestes', label: 'Cartões Banestes', hideable: true },
+            { id: 'b_sicoob', label: 'Cartões Sicoob', hideable: true },
+            { id: 'b_pix', label: 'Pix', hideable: true },
+            { id: 'b_depositos', label: 'Depósitos (do cofre)', hideable: true }
+          ],
+          restoreLink: true,
+          sublist: { id: 'b_outras_entradas', title: 'Outras entradas' },
+          totalId: 'b_total_entradas', totalLabel: 'Total de entradas bancárias'
+        },
+        {
+          id: 'b-saidas', type: 'normal', title: 'SAÍDAS', dateTag: 'anterior',
+          fields: [
+            { id: 'b_pagamentos', label: 'Pagamentos' },
+            { id: 'b_estornos_pix', label: 'Estornos de Pix' }
+          ],
+          sublist: { id: 'b_outras_saidas', title: 'Outras saídas' },
+          totalId: 'b_total_saidas', totalLabel: 'Total de saídas bancárias'
+        },
+        {
+          id: 'b-saldo-atual', type: 'saldo', title: 'SALDO ATUAL', dateTag: 'anterior',
+          saldoInicialId: 'b_saldo_inicial',
+          entradasRef: 'b_total_entradas', entradasLabel: '(+) Entradas bancárias',
+          saidasRef: 'b_total_saidas', saidasLabel: '(−) Saídas bancárias',
+          totalId: 'b_saldo_atual', totalLabel: 'Saldo atual das contas'
+        },
+        {
+          id: 'b-saidas-previstas', type: 'normal', title: 'SAÍDAS PREVISTAS', dateTag: 'hoje', dashed: true, badge: true,
+          fields: [
+            { id: 'b_boletos_dda', label: 'Pagamento de boletos (DDA)' }
+          ],
+          sublist: { id: 'b_outros_pag_prev', title: 'Outros pagamentos' },
+          totalId: 'b_total_saidas_previstas', totalLabel: 'Total de saídas previstas'
+        },
+        {
+          id: 'b-saldo-previsto', type: 'previsto', title: 'SALDO PREVISTO', dashed: true, badge: true,
+          baseRef: 'b_saldo_atual', baseLabel: 'Saldo atual das contas',
+          subRef: 'b_total_saidas_previstas', subLabel: '(−) Saídas previstas',
+          totalId: 'b_saldo_previsto', totalLabel: 'Saldo previsto das contas'
+        }
+      ]
+    },
+    cofre: {
+      theme: 'pink',
+      heading: 'Movimentações do Cofre',
+      boxes: [
+        {
+          id: 'c-entradas', type: 'normal', title: 'ENTRADAS', dateTag: 'anterior',
+          fields: [
+            { id: 'c_sangrias', label: 'Sangrias das vendas' },
+            { id: 'c_convenios', label: 'Convênios' }
+          ],
+          sublist: { id: 'c_outras_entradas', title: 'Outras entradas' },
+          totalId: 'c_total_entradas', totalLabel: 'Total de entradas em dinheiro'
+        },
+        {
+          id: 'c-saidas', type: 'normal', title: 'SAÍDAS', dateTag: 'anterior',
+          fields: [
+            { id: 'c_pagamentos', label: 'Pagamentos' },
+            { id: 'c_depositos_bancarios', label: 'Depósitos bancários' }
+          ],
+          sublist: { id: 'c_outras_saidas', title: 'Outras saídas' },
+          totalId: 'c_total_saidas', totalLabel: 'Total de saídas em dinheiro'
+        },
+        {
+          id: 'c-saldo-atual', type: 'saldo', title: 'SALDO ATUAL', dateTag: 'anterior',
+          saldoInicialId: 'c_saldo_inicial',
+          entradasRef: 'c_total_entradas', entradasLabel: '(+) Entradas em dinheiro',
+          saidasRef: 'c_total_saidas', saidasLabel: '(−) Saídas em dinheiro',
+          totalId: 'c_saldo_atual', totalLabel: 'Saldo atual do cofre'
+        },
+        {
+          id: 'c-saidas-previstas', type: 'normal', title: 'SAÍDAS PREVISTAS', dateTag: 'hoje', dashed: true, badge: true,
+          fields: [
+            { id: 'c_pagamentos_previstos', label: 'Pagamentos' }
+          ],
+          sublist: { id: 'c_outros_pag_prev', title: 'Outros pagamentos' },
+          totalId: 'c_total_saidas_previstas', totalLabel: 'Total de saídas previstas'
+        },
+        {
+          id: 'c-saldo-previsto', type: 'previsto', title: 'SALDO PREVISTO', dashed: true, badge: true,
+          baseRef: 'c_saldo_atual', baseLabel: 'Saldo atual do cofre',
+          subRef: 'c_total_saidas_previstas', subLabel: '(−) Saídas previstas',
+          totalId: 'c_saldo_previsto', totalLabel: 'Saldo previsto do cofre'
+        },
+        {
+          id: 'c-despesas', type: 'listOnly', title: 'DESPESAS ADICIONAIS',
+          sublist: { id: 'despesas_adicionais', title: 'Despesas' },
+          totalId: 'despesas_total', totalLabel: 'Total de despesas com sangrias'
+        }
+      ]
+    }
+  };
+
+  var ALL_BOXES = CONFIG.bancarias.boxes.concat(CONFIG.cofre.boxes);
+  var ALL_SUBLIST_IDS = [];
+  ALL_BOXES.forEach(function (b) { if (b.sublist) ALL_SUBLIST_IDS.push(b.sublist.id); });
+
+  // ================= Helpers =================
+  var money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+  function fmt(v) { return money.format(v || 0); }
+
+  function parseBr(v) {
+    if (v === null || v === undefined) return 0;
+    var s = String(v).trim();
+    if (s === '') return 0;
+    if (s.indexOf(',') !== -1) s = s.replace(/\./g, '').replace(',', '.');
+    var n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+  }
+  function num(id) { var el = document.getElementById(id); return el ? parseBr(el.value) : 0; }
+
+  function pad2(n) { return String(n).padStart(2, '0'); }
+  function todayStr() { var d = new Date(); return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+  function yesterdayStr() { var d = new Date(); d.setDate(d.getDate() - 1); return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+  function formatDateBr(iso) {
+    if (!iso) return '';
+    var p = iso.split('-');
+    return p.length === 3 ? (p[2] + '/' + p[1] + '/' + p[0]) : iso;
+  }
+  function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function slugify(s) {
+    return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase().replace(/(^-|-$)/g, '');
+  }
+
+  // ================= Rendering (HTML built from CONFIG) =================
+  function fieldRowHTML(f) {
+    var rowId = f.id + '-row';
+    var hideBtn = f.hideable ? '<button type="button" class="hide-btn" data-target="' + rowId + '" title="Ocultar campo">\u00D7</button>' : '';
+    return '<div class="field-row" id="' + rowId + '">' +
+      '<label for="' + f.id + '">' + escapeHtml(f.label) + '</label>' +
+      '<div class="field-input-wrap"><input type="text" inputmode="decimal" id="' + f.id + '" placeholder="0,00">' + hideBtn + '</div>' +
+      '</div>';
+  }
+  function sublistHTML(sl) {
+    return '<div class="sublist">' +
+      '<div class="sublist-header"><span>' + escapeHtml(sl.title) + '</span>' +
+      '<button type="button" class="add-btn" data-list="' + sl.id + '">+ item</button></div>' +
+      '<div id="' + sl.id + '-list"></div>' +
+      '<div class="subtotal-row"><span>Subtotal</span><span id="' + sl.id + '-subtotal">R$ 0,00</span></div>' +
+      '</div>';
+  }
+  function boxHTML(box, theme) {
+    var dateTagHtml = box.dateTag ? ' <span class="date-tag date-' + box.dateTag + '-tag">(--/--/----)</span>' : '';
+    var badgeHtml = box.badge ? '<span class="badge-previsao">PREVISÃO</span>' : '';
+    var header = '<div class="box-header">' + box.title + dateTagHtml + badgeHtml + '</div>';
+    var body = '';
+    if (box.restoreLink) {
+      body += '<a href="#" class="restore-link" id="restore-hidden-link">Mostrar campos ocultos</a>';
+    }
+    if (box.type === 'saldo') {
+      body += fieldRowHTML({ id: box.saldoInicialId, label: 'Saldo inicial' });
+      body += '<div class="readonly-row"><label>' + box.entradasLabel + '</label><span id="' + box.entradasRef + '-echo">R$ 0,00</span></div>';
+      body += '<div class="readonly-row"><label>' + box.saidasLabel + '</label><span id="' + box.saidasRef + '-echo">R$ 0,00</span></div>';
+      body += '<div class="total-row grand"><label>' + box.totalLabel + '</label><span id="' + box.totalId + '">R$ 0,00</span></div>';
+    } else if (box.type === 'previsto') {
+      body += '<div class="readonly-row"><label>' + box.baseLabel + '</label><span id="' + box.baseRef + '-echo">R$ 0,00</span></div>';
+      body += '<div class="readonly-row"><label>' + box.subLabel + '</label><span id="' + box.subRef + '-echo">R$ 0,00</span></div>';
+      body += '<div class="total-row grand"><label>' + box.totalLabel + '</label><span id="' + box.totalId + '">R$ 0,00</span></div>';
+    } else if (box.type === 'listOnly') {
+      body += sublistHTML(box.sublist);
+      body += '<div class="total-row grand"><label>' + box.totalLabel + '</label><span id="' + box.totalId + '">R$ 0,00</span></div>';
+    } else {
+      (box.fields || []).forEach(function (f) { body += fieldRowHTML(f); });
+      if (box.sublist) body += sublistHTML(box.sublist);
+      body += '<div class="total-row grand"><label>' + box.totalLabel + '</label><span id="' + box.totalId + '">R$ 0,00</span></div>';
+    }
+    var cls = 'box theme-' + theme + (box.dashed ? ' box-dashed' : '');
+    return '<div class="' + cls + '" id="box-' + box.id + '">' + header + '<div class="box-body">' + body + '</div></div>';
+  }
+  function renderColumn(containerId, cfg) {
+    var html = '<div class="column-heading ' + cfg.theme + '">' + cfg.heading + '</div>';
+    cfg.boxes.forEach(function (box) { html += boxHTML(box, cfg.theme); });
+    document.getElementById(containerId).innerHTML = html;
+  }
+
+  // ================= Dynamic sub-lists =================
+  function addSubRow(listId, desc, val) {
+    var list = document.getElementById(listId + '-list');
+    var row = document.createElement('div');
+    row.className = 'sub-row';
+    row.innerHTML =
+      '<input type="text" class="desc-input" placeholder="Descrição">' +
+      '<input type="text" inputmode="decimal" class="value-input" placeholder="0,00">' +
+      '<button type="button" class="remove-btn" aria-label="Remover">\u00D7</button>';
+    row.querySelector('.desc-input').value = desc || '';
+    row.querySelector('.value-input').value = val || '';
+    row.querySelector('.remove-btn').addEventListener('click', function () { row.remove(); recalc(); saveDraft(); });
+    row.querySelectorAll('input').forEach(function (inp) {
+      inp.addEventListener('input', function () { recalc(); saveDraft(); });
+    });
+    list.appendChild(row);
+  }
+  function readSubRows(listId) {
+    var rows = document.querySelectorAll('#' + listId + '-list .sub-row');
+    var out = [];
+    rows.forEach(function (r) {
+      out.push({ desc: r.querySelector('.desc-input').value.trim(), val: parseBr(r.querySelector('.value-input').value) });
+    });
+    return out;
+  }
+
+  // ================= Hidden fields =================
+  function currentHiddenIds() {
+    var set = {};
+    document.querySelectorAll('.field-row').forEach(function (row) {
+      if (row.style.display === 'none') {
+        var inp = row.querySelector('input');
+        if (inp) set[inp.id] = true;
+      }
+    });
+    return set;
+  }
+  function updateRestoreLinks() {
+    document.querySelectorAll('.restore-link').forEach(function (link) {
+      var box = link.closest('.box-body');
+      var hiddenCount = box.querySelectorAll('.field-row[style*="display: none"]').length;
+      if (hiddenCount > 0) {
+        link.style.display = 'inline';
+        link.textContent = 'Mostrar campos ocultos (' + hiddenCount + ')';
+      } else {
+        link.style.display = 'none';
+      }
+    });
+  }
+
+  // ================= State =================
+  function getState() {
+    var values = {};
+    ALL_BOXES.forEach(function (box) {
+      (box.fields || []).forEach(function (f) { values[f.id] = num(f.id); });
+      if (box.saldoInicialId) values[box.saldoInicialId] = num(box.saldoInicialId);
+    });
+    var sublists = {};
+    ALL_SUBLIST_IDS.forEach(function (id) {
+      var items = readSubRows(id);
+      var subtotal = items.reduce(function (s, it) { return s + it.val; }, 0);
+      sublists[id] = { items: items, subtotal: subtotal };
+    });
+
+    var totals = {};
+    totals.b_total_entradas = values.b_sicredi + values.b_itau + values.b_bradesco + values.b_banestes +
+      values.b_sicoob + values.b_pix + values.b_depositos + sublists.b_outras_entradas.subtotal;
+    totals.b_total_saidas = values.b_pagamentos + values.b_estornos_pix + sublists.b_outras_saidas.subtotal;
+    totals.b_saldo_atual = values.b_saldo_inicial + totals.b_total_entradas - totals.b_total_saidas;
+    totals.b_total_saidas_previstas = values.b_boletos_dda + sublists.b_outros_pag_prev.subtotal;
+    totals.b_saldo_previsto = totals.b_saldo_atual - totals.b_total_saidas_previstas;
+
+    totals.c_total_entradas = values.c_sangrias + values.c_convenios + sublists.c_outras_entradas.subtotal;
+    totals.c_total_saidas = values.c_pagamentos + values.c_depositos_bancarios + sublists.c_outras_saidas.subtotal;
+    totals.c_saldo_atual = values.c_saldo_inicial + totals.c_total_entradas - totals.c_total_saidas;
+    totals.c_total_saidas_previstas = values.c_pagamentos_previstos + sublists.c_outros_pag_prev.subtotal;
+    totals.c_saldo_previsto = totals.c_saldo_atual - totals.c_total_saidas_previstas;
+
+    totals.despesas_total = sublists.despesas_adicionais.subtotal;
+
+    return {
+      loja: document.getElementById('loja').value,
+      dataAnterior: document.getElementById('data-anterior').value,
+      dataHoje: document.getElementById('data-hoje').value,
+      values: values, sublists: sublists, totals: totals,
+      hidden: currentHiddenIds()
+    };
+  }
+
+  function recalc() {
+    var s = getState();
+    ALL_BOXES.forEach(function (box) {
+      if (box.totalId) document.getElementById(box.totalId).textContent = fmt(s.totals[box.totalId] !== undefined ? s.totals[box.totalId] : s.sublists[box.sublist.id].subtotal);
+      if (box.sublist) document.getElementById(box.sublist.id + '-subtotal').textContent = fmt(s.sublists[box.sublist.id].subtotal);
+      if (box.type === 'saldo') {
+        document.getElementById(box.entradasRef + '-echo').textContent = fmt(s.totals[box.entradasRef]);
+        document.getElementById(box.saidasRef + '-echo').textContent = fmt(s.totals[box.saidasRef]);
+      }
+      if (box.type === 'previsto') {
+        document.getElementById(box.baseRef + '-echo').textContent = fmt(s.totals[box.baseRef]);
+        document.getElementById(box.subRef + '-echo').textContent = fmt(s.totals[box.subRef]);
+      }
+    });
+    updateRestoreLinks();
+  }
+
+  function updateDateTags() {
+    var ant = document.getElementById('data-anterior').value;
+    var hoje = document.getElementById('data-hoje').value;
+    var antTxt = ant ? '(' + formatDateBr(ant) + ')' : '(--/--/----)';
+    var hojeTxt = hoje ? '(' + formatDateBr(hoje) + ')' : '(--/--/----)';
+    document.querySelectorAll('.date-anterior-tag').forEach(function (el) { el.textContent = antTxt; });
+    document.querySelectorAll('.date-hoje-tag').forEach(function (el) { el.textContent = hojeTxt; });
+  }
+
+  // ================= Draft persistence (per-viewer convenience) =================
+  var DRAFT_KEY = 'relatorio-movimentacoes-draft-v1';
+  function saveDraft() {
+    try {
+      var s = getState();
+      var draft = {
+        loja: s.loja, dataAnterior: s.dataAnterior, dataHoje: s.dataHoje,
+        values: {}, sublists: {}
+      };
+      Object.keys(s.values).forEach(function (k) { draft.values[k] = document.getElementById(k) ? document.getElementById(k).value : ''; });
+      ALL_SUBLIST_IDS.forEach(function (id) { draft.sublists[id] = readSubRows(id); });
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch (e) { /* per-viewer convenience only — ignore failures */ }
+  }
+  function loadDraft() {
+    try {
+      var raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return false;
+      var d = JSON.parse(raw);
+      if (d.loja) document.getElementById('loja').value = d.loja;
+      if (d.dataAnterior) document.getElementById('data-anterior').value = d.dataAnterior;
+      if (d.dataHoje) document.getElementById('data-hoje').value = d.dataHoje;
+      Object.keys(d.values || {}).forEach(function (k) {
+        var el = document.getElementById(k);
+        if (el) el.value = d.values[k];
+      });
+      ALL_SUBLIST_IDS.forEach(function (id) {
+        (d.sublists && d.sublists[id] || []).forEach(function (it) { addSubRow(id, it.desc, it.val); });
+      });
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // ================= PDF generation (single page, two columns) =================
+  var PALETTE = { blue: [17, 150, 210], pink: [236, 41, 143], blueLight: [138, 220, 248], pinkLight: [247, 182, 216], gray: [110, 118, 128] };
+
+  function buildPdf(state) {
+    var jsPDFCtor = window.jspdf && window.jspdf.jsPDF;
+    if (!jsPDFCtor) return null;
+    var doc = new jsPDFCtor({ unit: 'mm', format: 'a4' });
+    var pageW = 210, marginX = 10, gutter = 6;
+    var colW = (pageW - marginX * 2 - gutter) / 2;
+    var xLeft = marginX, xRight = marginX + colW + gutter;
+    var topY = 14;
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(PALETTE.pink[0], PALETTE.pink[1], PALETTE.pink[2]);
+    doc.text('Relatório de Movimentações', marginX, topY);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(90, 90, 90);
+    var infoLine = (state.loja || '-') + '   |   Dia anterior: ' + (formatDateBr(state.dataAnterior) || '-') + '   |   Hoje: ' + (formatDateBr(state.dataHoje) || '-');
+    doc.text(infoLine, marginX, topY + 5.5);
+
+    var startY = topY + 11;
+    drawColumn(doc, xLeft, colW, startY, CONFIG.bancarias, state, 'blue');
+    drawColumn(doc, xRight, colW, startY, CONFIG.cofre, state, 'pink');
+
+    doc.setFont('helvetica', 'italic'); doc.setFontSize(7); doc.setTextColor(150, 150, 150);
+    doc.text('Gerado em ' + new Date().toLocaleString('pt-BR'), marginX, 289);
+
+    return doc;
+  }
+
+  function drawColumn(doc, x, w, startY, cfg, state, theme) {
+    var y = startY;
+    var color = theme === 'blue' ? PALETTE.blue : PALETTE.pink;
+    var lightColor = theme === 'blue' ? PALETTE.blueLight : PALETTE.pinkLight;
+
+    doc.setFillColor(color[0], color[1], color[2]);
+    doc.rect(x, y, w, 6, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(255, 255, 255);
+    doc.text(cfg.heading.toUpperCase(), x + 2.5, y + 4.2);
+    y += 9;
+
+    cfg.boxes.forEach(function (box) {
+      y = drawBox(doc, x, w, y, box, state, color, lightColor);
+      y += 3;
+    });
+    return y;
+  }
+
+  function drawBox(doc, x, w, y, box, state, color, lightColor) {
+    var rowH = 4.1, padX = 2.5;
+    var boxStartY = y;
+    var lines = [];
+
+    function pushRow(label, value, opts) {
+      lines.push({ label: label, value: value, bold: !!(opts && opts.bold), indent: (opts && opts.indent) || 0 });
+    }
+
+    if (box.type === 'saldo') {
+      pushRow('Saldo inicial', fmt(state.values[box.saldoInicialId]));
+      pushRow(box.entradasLabel, fmt(state.totals[box.entradasRef]));
+      pushRow(box.saidasLabel, fmt(state.totals[box.saidasRef]));
+      pushRow(box.totalLabel, fmt(state.totals[box.totalId]), { bold: true });
+    } else if (box.type === 'previsto') {
+      pushRow(box.baseLabel, fmt(state.totals[box.baseRef]));
+      pushRow(box.subLabel, fmt(state.totals[box.subRef]));
+      pushRow(box.totalLabel, fmt(state.totals[box.totalId]), { bold: true });
+    } else {
+      (box.fields || []).forEach(function (f) {
+        if (state.hidden[f.id]) return;
+        pushRow(f.label, fmt(state.values[f.id]));
+      });
+      if (box.sublist) {
+        var sl = state.sublists[box.sublist.id];
+        var realItems = sl.items.filter(function (it) { return it.desc !== '' || it.val !== 0; });
+        if (realItems.length) {
+          pushRow(box.sublist.title + ':', '', { bold: true });
+          realItems.forEach(function (it) { pushRow(it.desc || '(sem descrição)', fmt(it.val), { indent: 3 }); });
+          pushRow('Subtotal', fmt(sl.subtotal), { indent: 3 });
+        }
+      }
+      pushRow(box.totalLabel, fmt(state.totals[box.totalId]), { bold: true });
+    }
+
+    var headerH = 5.2;
+    var bodyH = lines.length * rowH + 2;
+    var totalH = headerH + bodyH;
+
+    doc.setDrawColor(color[0], color[1], color[2]);
+    doc.setLineWidth(box.dashed ? 0.3 : 0.2);
+    if (box.dashed && doc.setLineDash) doc.setLineDash([1.2, 1]); else if (doc.setLineDash) doc.setLineDash([]);
+    doc.rect(x, boxStartY, w, totalH);
+    if (doc.setLineDash) doc.setLineDash([]);
+
+    doc.setFillColor(color[0], color[1], color[2]);
+    doc.rect(x, boxStartY, w, headerH, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(255, 255, 255);
+    var titleTxt = box.title + (box.dateTag ? '  ' + (box.dateTag === 'anterior' ? (formatDateBr(state.dataAnterior) ? '(' + formatDateBr(state.dataAnterior) + ')' : '') : (formatDateBr(state.dataHoje) ? '(' + formatDateBr(state.dataHoje) + ')' : '')) : '');
+    doc.text(titleTxt, x + padX, boxStartY + 3.6);
+    if (box.badge) {
+      doc.setFontSize(6);
+      doc.text('PREVISÃO', x + w - padX, boxStartY + 3.6, { align: 'right' });
+    }
+
+    var ly = boxStartY + headerH + 3.4;
+    lines.forEach(function (ln) {
+      doc.setFont('helvetica', ln.bold ? 'bold' : 'normal');
+      doc.setFontSize(ln.bold ? 7.6 : 7.2);
+      doc.setTextColor(30, 30, 30);
+      doc.text(String(ln.label), x + padX + ln.indent, ly);
+      if (ln.value !== '') doc.text(String(ln.value), x + w - padX, ly, { align: 'right' });
+      ly += rowH;
+    });
+
+    return boxStartY + totalH;
+  }
+
+  async function getDownloadsCapability() {
+    try {
+      if (!window.claude || typeof window.claude.use !== 'function') return null;
+      return await window.claude.use('downloads');
+    } catch (e) { return null; }
+  }
+  function browserDownload(filename, blob) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+  }
+  function setStatus(msg, kind) {
+    var el = document.getElementById('status-msg');
+    el.textContent = msg; el.className = kind || '';
+  }
+
+  // ================= Wiring =================
+  function wireEvents() {
+    document.body.addEventListener('click', function (e) {
+      if (e.target.classList.contains('add-btn')) {
+        addSubRow(e.target.getAttribute('data-list'));
+        recalc(); saveDraft();
+      } else if (e.target.classList.contains('hide-btn')) {
+        var row = document.getElementById(e.target.getAttribute('data-target'));
+        if (row) {
+          row.style.display = 'none';
+          var inp = row.querySelector('input');
+          if (inp) { inp.value = ''; inp.disabled = true; }
+        }
+        recalc(); saveDraft();
+      } else if (e.target.classList.contains('restore-link')) {
+        e.preventDefault();
+        var box = e.target.closest('.box-body');
+        box.querySelectorAll('.field-row').forEach(function (r) {
+          if (r.style.display === 'none') {
+            r.style.display = '';
+            var inp = r.querySelector('input');
+            if (inp) inp.disabled = false;
+          }
+        });
+        recalc(); saveDraft();
+      }
+    });
+
+    document.body.addEventListener('input', function (e) {
+      if (e.target.matches('input, select')) { recalc(); saveDraft(); }
+    });
+    document.body.addEventListener('change', function (e) {
+      if (e.target.id === 'data-anterior' || e.target.id === 'data-hoje') updateDateTags();
+      if (e.target.matches('input, select')) { recalc(); saveDraft(); }
+    });
+
+    document.getElementById('btn-clear').addEventListener('click', function () {
+      if (!window.confirm('Limpar todos os campos do formulário?')) return;
+      document.querySelectorAll('.box input[type="text"]').forEach(function (i) { i.value = ''; });
+      document.querySelectorAll('.box .field-row').forEach(function (r) {
+        r.style.display = '';
+        var inp = r.querySelector('input'); if (inp) inp.disabled = false;
+      });
+      ALL_SUBLIST_IDS.forEach(function (id) { document.getElementById(id + '-list').innerHTML = ''; addSubRow(id); });
+      document.getElementById('data-anterior').value = yesterdayStr();
+      document.getElementById('data-hoje').value = todayStr();
+      updateDateTags(); recalc();
+      try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+      setStatus('', '');
+    });
+
+    document.getElementById('btn-pdf').addEventListener('click', async function () {
+      setStatus('', '');
+      var state = getState();
+      if (!state.loja || !state.dataAnterior || !state.dataHoje) {
+        setStatus('Selecione a loja e as duas datas antes de gerar o PDF.', 'error');
+        return;
+      }
+      var doc = buildPdf(state);
+      if (!doc) {
+        setStatus('Não foi possível carregar o gerador de PDF. Recarregue a página e tente novamente.', 'error');
+        return;
+      }
+      var blob = doc.output('blob');
+      var filename = 'relatorio_movimentacoes_' + slugify(state.loja) + '_' + state.dataAnterior + '.pdf';
+
+      var downloads = await getDownloadsCapability();
+      if (downloads) {
+        try {
+          var result = await downloads.save({ filename: filename, data: blob });
+          setStatus(result.status === 'saved' ? 'PDF salvo com sucesso.' : 'PDF enviado.', 'success');
+          return;
+        } catch (err) {
+          if (err && err.code === 'declined') { setStatus('Download cancelado.', ''); return; }
+        }
+      }
+      try { browserDownload(filename, blob); setStatus('PDF baixado com sucesso.', 'success'); }
+      catch (e) { setStatus('Não foi possível gerar o download. Tente novamente ou use outro navegador.', 'error'); }
+    });
+  }
+
+  // ================= Init =================
+  renderColumn('col-bancarias', CONFIG.bancarias);
+  renderColumn('col-cofre', CONFIG.cofre);
+  wireEvents();
+
+  document.getElementById('data-anterior').value = yesterdayStr();
+  document.getElementById('data-hoje').value = todayStr();
+  var hadDraft = loadDraft();
+  ALL_SUBLIST_IDS.forEach(function (id) {
+    if (document.querySelectorAll('#' + id + '-list .sub-row').length === 0) addSubRow(id);
+  });
+  updateDateTags();
+  updateRestoreLinks();
+  recalc();
+})();
+</script>
+</body>
+</html>
