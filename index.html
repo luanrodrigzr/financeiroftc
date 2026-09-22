@@ -10,6 +10,11 @@
     --blue-light: #8ADCF8;
     --pink: #EC298F;
     --pink-light: #F7B6D8;
+    --wine: #a4161a;
+    --positive: #29bf12;
+    --purple: #7F60B1;
+    --blue-light-text: #0d3c52;
+    --pink-light-text: #6b1140;
 
     --bg: #f4f6f8;
     --surface: #ffffff;
@@ -23,44 +28,31 @@
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #13171c;
-      --surface: #1c2229;
-      --border: #303941;
-      --text: #e7ebee;
-      --muted: #9aa5b1;
-      --input-bg: #232a31;
+      --bg: #13171c; --surface: #1c2229; --border: #303941;
+      --text: #e7ebee; --muted: #9aa5b1; --input-bg: #232a31;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #13171c;
-    --surface: #1c2229;
-    --border: #303941;
-    --text: #e7ebee;
-    --muted: #9aa5b1;
-    --input-bg: #232a31;
+    --bg: #13171c; --surface: #1c2229; --border: #303941;
+    --text: #e7ebee; --muted: #9aa5b1; --input-bg: #232a31;
   }
   html { scroll-padding-top: env(safe-area-inset-top, 0px); }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: Arial, Helvetica, sans-serif;
-    -webkit-font-smoothing: antialiased;
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: Arial, Helvetica, sans-serif; -webkit-font-smoothing: antialiased;
   }
   .page { max-width: 1080px; margin: 0 auto; padding: 18px 14px 48px; }
 
   header.top {
     background: linear-gradient(135deg, var(--blue), var(--pink));
-    color: #ffffff;
-    border-radius: 12px;
-    padding: 16px 18px;
-    margin-bottom: 16px;
+    color: #ffffff; border-radius: 12px; padding: 14px 18px; margin-bottom: 16px;
   }
   .header-top-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-  .logo { max-height: 46px; max-width: 140px; border-radius: 4px; background: #fff; padding: 3px; }
+  .logo { max-height: 54px; max-width: 210px; border-radius: 6px; background: #fff; padding: 4px; }
   header.top h1 { margin: 0; font-size: 1.3rem; letter-spacing: 0.2px; }
+  .eyebrow { font-size: 0.68rem; font-weight: bold; letter-spacing: 1.2px; opacity: 0.88; margin-bottom: 4px; }
   .header-fields { display: flex; gap: 10px; flex-wrap: wrap; }
   .header-fields .field { flex: 1; min-width: 150px; }
   .header-fields label { color: #ffffff; opacity: 0.92; }
@@ -70,6 +62,9 @@
     background: var(--input-bg); color: var(--text); font-size: 0.9rem; font-family: inherit;
   }
   input:focus, select:focus { outline: 2px solid var(--blue); outline-offset: 1px; }
+  input[readonly] { background: var(--bg); color: var(--muted); cursor: default; }
+
+  .intro-step1 { font-size: 1.02rem; color: var(--muted); margin: 0 0 14px; text-align: center; }
 
   .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
   @media (max-width: 760px) { .columns { grid-template-columns: 1fr; } }
@@ -92,11 +87,14 @@
   }
   .box.theme-blue .box-header { background: var(--blue); }
   .box.theme-pink .box-header { background: var(--pink); }
+  .box.header-light.theme-blue .box-header { background: var(--blue-light); color: var(--blue-light-text); }
+  .box.header-light.theme-pink .box-header { background: var(--pink-light); color: var(--pink-light-text); }
   .date-tag { font-weight: normal; opacity: 0.9; font-size: 0.78rem; }
   .badge-previsao {
     font-size: 0.62rem; font-weight: bold; background: rgba(255,255,255,0.25);
     padding: 2px 7px; border-radius: 20px; letter-spacing: 0.3px;
   }
+  .box.header-light .badge-previsao { background: rgba(0,0,0,0.12); }
   .box-body { padding: 12px; }
 
   .field-row { margin-bottom: 9px; }
@@ -107,7 +105,11 @@
     border-radius: 5px; width: 26px; height: 30px; cursor: pointer; font-size: 0.9rem; flex-shrink: 0;
   }
   .hide-btn:hover { color: var(--pink); border-color: var(--pink); }
-  .field-row.field-hidden { display: none; }
+  .sign-toggle {
+    border: 1px solid var(--border); background: transparent; color: var(--muted);
+    border-radius: 5px; width: 34px; height: 30px; cursor: pointer; font-size: 1rem; font-weight: bold; flex-shrink: 0;
+  }
+  .sign-toggle:disabled { opacity: 0.35; cursor: not-allowed; }
   .restore-link {
     display: none; font-size: 0.72rem; color: var(--blue); text-decoration: underline;
     cursor: pointer; margin-bottom: 8px;
@@ -121,6 +123,8 @@
   .total-row.grand { border-top: 1px solid var(--border); margin-top: 6px; font-size: 0.95rem; }
   .box.theme-blue .total-row.grand span { color: var(--blue); }
   .box.theme-pink .total-row.grand span { color: var(--pink); }
+  .negative-value { color: var(--wine) !important; }
+  #box-b-saldo-atual .total-row.grand label { color: var(--blue-light-text); }
 
   .sublist { background: var(--bg); border-radius: 8px; padding: 9px; margin: 9px 0; }
   .sublist-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
@@ -130,16 +134,14 @@
     padding: 3px 9px; font-size: 0.74rem; cursor: pointer;
   }
   .box.theme-pink .add-btn { border-color: var(--pink); color: var(--pink); }
+  .box.theme-pink .sublist .add-btn { color: var(--pink); border-color: var(--pink); }
   .add-btn:hover { background: var(--blue); color: #fff; }
   .box.theme-pink .add-btn:hover { background: var(--pink); }
+  .box.theme-pink .sublist .add-btn:hover { background: var(--pink); color: #fff; }
   .sub-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
   .sub-row .desc-input { flex: 1; }
   .sub-row .value-input { width: 100px; text-align: right; }
   .sub-row .remove-btn { border: none; background: transparent; color: var(--pink); font-size: 1.05rem; cursor: pointer; padding: 2px 6px; }
-  .subtotal-row {
-    display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: bold;
-    color: var(--muted); padding-top: 4px; border-top: 1px dashed var(--border);
-  }
 
   .actions { display: flex; gap: 10px; margin: 18px 0 6px; flex-wrap: wrap; }
   button.primary {
@@ -150,16 +152,55 @@
     background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 8px;
     padding: 12px 16px; font-size: 0.88rem; cursor: pointer;
   }
+  button.pdf-btn {
+    background: var(--purple); color: #fff; border: none; border-radius: 8px;
+    padding: 12px 20px; font-size: 0.92rem; font-weight: bold; cursor: pointer;
+  }
   #status-msg { font-size: 0.82rem; min-height: 1.2em; }
   #status-msg.error { color: var(--pink); }
   #status-msg.success { color: var(--blue); }
+
+  /* ---- Step 1 / Step 2 wizard ---- */
+  #actions-step2 { display: none; }
+  body.step2 #actions-step1 { display: none; }
+  body.step2 #actions-step2 { display: flex; }
+  body.step2 .intro-step1,
+  body.step2 #step1-box-container { display: none; }
+  body.step1 .columns,
+  body.step1 #saldo-geral-container { display: none; }
+  #step1-box-container { max-width: 640px; margin: 0 auto; }
+  #step1-box-container .box-header { font-size: 1.05rem; padding: 12px 16px; }
+  #step1-box-container .box-body { padding: 22px; }
+  #step1-box-container label { font-size: 0.85rem; }
+
+  #saldo-geral-container { display: flex; justify-content: center; }
+  .saldo-geral-box { margin-top: 4px; min-width: 40%; width: fit-content; border-color: var(--border); }
+  .saldo-geral-box .box-header {
+    background: var(--muted);
+    font-size: 1rem; justify-content: center; text-align: center;
+  }
+  .saldo-geral-box.is-negative .box-header { background: var(--wine); }
+  .saldo-geral-box.is-negative { border-color: var(--wine); }
+  .saldo-geral-box.is-negative .saldo-geral-value { color: var(--wine); }
+  .saldo-geral-box.is-positive .box-header { background: var(--positive); }
+  .saldo-geral-box.is-positive { border-color: var(--positive); }
+  .saldo-geral-box.is-positive .saldo-geral-value { color: var(--positive); }
+  .saldo-geral-box .box-body { text-align: center; padding: 18px 24px; }
+  .saldo-geral-value { font-size: 1.7rem; font-weight: bold; color: var(--text); }
+  .saldo-geral-caption { font-size: 0.85rem; font-weight: bold; color: var(--muted); margin-top: 6px; }
+
+  .box-note { font-size: 0.72rem; color: var(--muted); margin-top: 10px; line-height: 1.4; }
+
+  .field-error { color: var(--wine); font-size: 0.78rem; margin: -5px 0 10px; min-height: 1.1em; }
+
+  button.confirm-pending { background: var(--pink); color: #fff; border-color: var(--pink); }
 </style>
 </head>
-<body>
+<body class="step1">
   <div class="page">
     <header class="top">
+      <div class="eyebrow">FARMÁCIA DO TRABALHADOR CAPIXABA</div>
       <div class="header-top-row">
-        <img id="logo" class="logo" style="display:none;" alt="Logo">
         <h1>Relatório de Movimentações</h1>
       </div>
       <div class="header-fields">
@@ -187,13 +228,22 @@
       </div>
     </header>
 
+    <p class="intro-step1">Preencha as saídas previstas de hoje para gerar o relatório de contas a pagar e continuar para o relatório completo.</p>
+    <div id="step1-box-container"></div>
+
     <div class="columns">
       <div id="col-bancarias"></div>
       <div id="col-cofre"></div>
     </div>
+    <div id="saldo-geral-container"></div>
 
-    <div class="actions">
-      <button type="button" class="primary" id="btn-pdf">Baixar PDF</button>
+    <div class="actions" id="actions-step1">
+      <button type="button" class="pdf-btn" id="btn-pdf-contas">Baixar PDF</button>
+      <button type="button" class="primary" id="btn-continuar">Continuar</button>
+    </div>
+    <div class="actions" id="actions-step2">
+      <button type="button" class="secondary" id="btn-voltar">← Voltar</button>
+      <button type="button" class="pdf-btn" id="btn-pdf">Baixar PDF</button>
       <button type="button" class="secondary" id="btn-clear">Limpar formulário</button>
     </div>
     <p id="status-msg"></p>
@@ -211,6 +261,10 @@
       heading: 'Movimentações Bancárias',
       boxes: [
         {
+          id: 'b-saldo-inicial', type: 'saldoInicial', title: 'SALDO ANTERIOR', dateTag: 'anterior',
+          fieldId: 'b_saldo_inicial', fieldLabel: 'Saldo anterior'
+        },
+        {
           id: 'b-entradas', type: 'normal', title: 'ENTRADAS', dateTag: 'anterior',
           fields: [
             { id: 'b_sicredi', label: 'Cartões Sicredi', hideable: true },
@@ -219,7 +273,7 @@
             { id: 'b_banestes', label: 'Cartões Banestes', hideable: true },
             { id: 'b_sicoob', label: 'Cartões Sicoob', hideable: true },
             { id: 'b_pix', label: 'Pix', hideable: true },
-            { id: 'b_depositos', label: 'Depósitos (do cofre)', hideable: true }
+            { id: 'b_depositos', label: 'Depósitos (do cofre)', linkedFrom: 'c_depositos_bancarios' }
           ],
           restoreLink: true,
           sublist: { id: 'b_outras_entradas', title: 'Outras entradas' },
@@ -228,32 +282,19 @@
         {
           id: 'b-saidas', type: 'normal', title: 'SAÍDAS', dateTag: 'anterior',
           fields: [
-            { id: 'b_pagamentos', label: 'Pagamentos' },
-            { id: 'b_estornos_pix', label: 'Estornos de Pix' }
+            { id: 'b_boletos_dda_pago', label: 'Boletos (DDA)' },
+            { id: 'b_estornos_pix', label: 'Devoluções de Pix', hideable: true }
           ],
+          restoreLink: true,
           sublist: { id: 'b_outras_saidas', title: 'Outras saídas' },
           totalId: 'b_total_saidas', totalLabel: 'Total de saídas bancárias'
         },
         {
-          id: 'b-saldo-atual', type: 'saldo', title: 'SALDO ATUAL', dateTag: 'anterior',
+          id: 'b-saldo-atual', type: 'saldo', title: 'SALDO ATUAL', dateTag: 'anterior', light: true,
           saldoInicialId: 'b_saldo_inicial',
-          entradasRef: 'b_total_entradas', entradasLabel: '(+) Entradas bancárias',
-          saidasRef: 'b_total_saidas', saidasLabel: '(−) Saídas bancárias',
+          entradasRef: 'b_total_entradas', entradasLabel: 'Entradas bancárias',
+          saidasRef: 'b_total_saidas', saidasLabel: 'Saídas bancárias',
           totalId: 'b_saldo_atual', totalLabel: 'Saldo atual das contas'
-        },
-        {
-          id: 'b-saidas-previstas', type: 'normal', title: 'SAÍDAS PREVISTAS', dateTag: 'hoje', dashed: true, badge: true,
-          fields: [
-            { id: 'b_boletos_dda', label: 'Pagamento de boletos (DDA)' }
-          ],
-          sublist: { id: 'b_outros_pag_prev', title: 'Outros pagamentos' },
-          totalId: 'b_total_saidas_previstas', totalLabel: 'Total de saídas previstas'
-        },
-        {
-          id: 'b-saldo-previsto', type: 'previsto', title: 'SALDO PREVISTO', dashed: true, badge: true,
-          baseRef: 'b_saldo_atual', baseLabel: 'Saldo atual das contas',
-          subRef: 'b_total_saidas_previstas', subLabel: '(−) Saídas previstas',
-          totalId: 'b_saldo_previsto', totalLabel: 'Saldo previsto das contas'
         }
       ]
     },
@@ -262,10 +303,13 @@
       heading: 'Movimentações do Cofre',
       boxes: [
         {
+          id: 'c-saldo-inicial', type: 'saldoInicial', title: 'SALDO ANTERIOR', dateTag: 'anterior', signToggle: false,
+          fieldId: 'c_saldo_inicial', fieldLabel: 'Saldo anterior'
+        },
+        {
           id: 'c-entradas', type: 'normal', title: 'ENTRADAS', dateTag: 'anterior',
           fields: [
-            { id: 'c_sangrias', label: 'Sangrias das vendas' },
-            { id: 'c_convenios', label: 'Convênios' }
+            { id: 'c_sangrias', label: 'Sangrias das vendas' }
           ],
           sublist: { id: 'c_outras_entradas', title: 'Outras entradas' },
           totalId: 'c_total_entradas', totalLabel: 'Total de entradas em dinheiro'
@@ -273,59 +317,70 @@
         {
           id: 'c-saidas', type: 'normal', title: 'SAÍDAS', dateTag: 'anterior',
           fields: [
-            { id: 'c_pagamentos', label: 'Pagamentos' },
             { id: 'c_depositos_bancarios', label: 'Depósitos bancários' }
           ],
           sublist: { id: 'c_outras_saidas', title: 'Outras saídas' },
           totalId: 'c_total_saidas', totalLabel: 'Total de saídas em dinheiro'
         },
         {
-          id: 'c-saldo-atual', type: 'saldo', title: 'SALDO ATUAL', dateTag: 'anterior',
-          saldoInicialId: 'c_saldo_inicial',
-          entradasRef: 'c_total_entradas', entradasLabel: '(+) Entradas em dinheiro',
-          saidasRef: 'c_total_saidas', saidasLabel: '(−) Saídas em dinheiro',
-          totalId: 'c_saldo_atual', totalLabel: 'Saldo atual do cofre'
-        },
-        {
-          id: 'c-saidas-previstas', type: 'normal', title: 'SAÍDAS PREVISTAS', dateTag: 'hoje', dashed: true, badge: true,
-          fields: [
-            { id: 'c_pagamentos_previstos', label: 'Pagamentos' }
-          ],
-          sublist: { id: 'c_outros_pag_prev', title: 'Outros pagamentos' },
-          totalId: 'c_total_saidas_previstas', totalLabel: 'Total de saídas previstas'
-        },
-        {
-          id: 'c-saldo-previsto', type: 'previsto', title: 'SALDO PREVISTO', dashed: true, badge: true,
-          baseRef: 'c_saldo_atual', baseLabel: 'Saldo atual do cofre',
-          subRef: 'c_total_saidas_previstas', subLabel: '(−) Saídas previstas',
-          totalId: 'c_saldo_previsto', totalLabel: 'Saldo previsto do cofre'
-        },
-        {
-          id: 'c-despesas', type: 'listOnly', title: 'DESPESAS ADICIONAIS',
+          id: 'c-despesas', type: 'listOnly', title: 'DESPESAS PAGAS NOS CAIXAS', dateTag: 'anterior',
           sublist: { id: 'despesas_adicionais', title: 'Despesas' },
-          totalId: 'despesas_total', totalLabel: 'Total de despesas com sangrias'
+          totalId: 'despesas_total', totalLabel: 'Total de sangrias das despesas',
+          note: 'OBSERVAÇÃO: Os valores das sangrias de despesas feitas nos caixas não interferem no saldo do COFRE.'
+        },
+        {
+          id: 'c-saldo-atual', type: 'saldo', title: 'SALDO ATUAL', dateTag: 'anterior', light: true,
+          saldoInicialId: 'c_saldo_inicial',
+          entradasRef: 'c_total_entradas', entradasLabel: 'Entradas em dinheiro',
+          saidasRef: 'c_total_saidas', saidasLabel: 'Saídas em dinheiro',
+          totalId: 'c_saldo_atual', totalLabel: 'Saldo atual do cofre'
         }
       ]
     }
   };
 
-  var ALL_BOXES = CONFIG.bancarias.boxes.concat(CONFIG.cofre.boxes);
+  // Fica fora das colunas: só aparece na primeira tela (passo 1) e alimenta o
+  // PDF "Relatório de contas a pagar". Não faz parte do relatório de 2 colunas.
+  var STEP1_BOX = {
+    id: 'b-saidas-previstas', type: 'normal', title: 'SAÍDAS PREVISTAS', dateTag: 'hoje', badge: true, light: true,
+    fields: [
+      { id: 'b_boletos_dda', label: 'Boletos (DDA)' }
+    ],
+    sublist: { id: 'b_outros_pag_prev', title: 'Outros pagamentos' },
+    totalId: 'b_total_saidas_previstas', totalLabel: 'Total de saídas previstas'
+  };
+
+  var ALL_BOXES = CONFIG.bancarias.boxes.concat(CONFIG.cofre.boxes).concat([STEP1_BOX]);
   var ALL_SUBLIST_IDS = [];
   ALL_BOXES.forEach(function (b) { if (b.sublist) ALL_SUBLIST_IDS.push(b.sublist.id); });
+  var SALDO_INICIAL_IDS = ALL_BOXES.filter(function (b) { return b.type === 'saldoInicial'; }).map(function (b) { return b.fieldId; });
 
   // ================= Helpers =================
   var money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-  function fmt(v) { return money.format(v || 0); }
+  function fmt(v) {
+    var s = money.format(v || 0).replace(/\u00A0/g, ' ');
+    if (s.charAt(0) === '-' && s.charAt(1) !== ' ') s = '- ' + s.slice(1);
+    return s;
+  }
+  function signedFmt(sign, v) { return sign + ' ' + fmt(v); }
 
   function parseBr(v) {
     if (v === null || v === undefined) return 0;
     var s = String(v).trim();
     if (s === '') return 0;
+    s = s.replace(/[^\d,.-]/g, '');
     if (s.indexOf(',') !== -1) s = s.replace(/\./g, '').replace(',', '.');
     var n = parseFloat(s);
     return isNaN(n) ? 0 : n;
   }
   function num(id) { var el = document.getElementById(id); return el ? parseBr(el.value) : 0; }
+  function numSigned(id) {
+    var el = document.getElementById(id);
+    if (!el) return 0;
+    var sign = el.dataset && el.dataset.sign === '-1' ? -1 : 1;
+    return parseBr(el.value) * sign;
+  }
+  function dynamicSignedFmt(v) { return (v < 0 ? '- ' : '+ ') + fmt(Math.abs(v)); }
 
   function pad2(n) { return String(n).padStart(2, '0'); }
   function todayStr() { var d = new Date(); return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
@@ -345,13 +400,38 @@
       .replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase().replace(/(^-|-$)/g, '');
   }
 
+  // ---- Currency mask ----
+  function formatMasked(n) {
+    if (!n) return '';
+    var cents = Math.round(Math.abs(n) * 100);
+    var digits = String(cents);
+    while (digits.length < 3) digits = '0' + digits;
+    var centsStr = digits.slice(-2);
+    var intPart = digits.slice(0, -2).replace(/^0+(?=\d)/, '') || '0';
+    intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return 'R$ ' + intPart + ',' + centsStr;
+  }
+  function attachMoneyMask(el) {
+    el.addEventListener('input', function () {
+      var digits = el.value.replace(/\D/g, '');
+      if (digits === '') return;
+      digits = digits.replace(/^0+(?=\d)/, '');
+      while (digits.length < 3) digits = '0' + digits;
+      var centsStr = digits.slice(-2);
+      var intPart = digits.slice(0, -2).replace(/^0+(?=\d)/, '') || '0';
+      intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      el.value = 'R$ ' + intPart + ',' + centsStr;
+    });
+  }
+
   // ================= Rendering (HTML built from CONFIG) =================
   function fieldRowHTML(f) {
     var rowId = f.id + '-row';
     var hideBtn = f.hideable ? '<button type="button" class="hide-btn" data-target="' + rowId + '" title="Ocultar campo">\u00D7</button>' : '';
+    var readonlyAttr = f.linkedFrom ? ' readonly' : '';
     return '<div class="field-row" id="' + rowId + '">' +
       '<label for="' + f.id + '">' + escapeHtml(f.label) + '</label>' +
-      '<div class="field-input-wrap"><input type="text" inputmode="decimal" id="' + f.id + '" placeholder="0,00">' + hideBtn + '</div>' +
+      '<div class="field-input-wrap"><input type="text" inputmode="decimal" class="money-input" id="' + f.id + '" placeholder="0,00"' + readonlyAttr + '>' + hideBtn + '</div>' +
       '</div>';
   }
   function sublistHTML(sl) {
@@ -359,19 +439,26 @@
       '<div class="sublist-header"><span>' + escapeHtml(sl.title) + '</span>' +
       '<button type="button" class="add-btn" data-list="' + sl.id + '">+ item</button></div>' +
       '<div id="' + sl.id + '-list"></div>' +
-      '<div class="subtotal-row"><span>Subtotal</span><span id="' + sl.id + '-subtotal">R$ 0,00</span></div>' +
       '</div>';
   }
   function boxHTML(box, theme) {
-    var dateTagHtml = box.dateTag ? ' <span class="date-tag date-' + box.dateTag + '-tag">(--/--/----)</span>' : '';
+    var dateTagClass = box.type === 'saldoInicial' ? 'date-' + box.dateTag + '-tag-prefixed' : 'date-' + box.dateTag + '-tag';
+    var dateTagPlaceholder = box.type === 'saldoInicial' ? '(no início do dia --/--/----)' : '(--/--/----)';
+    var dateTagHtml = box.dateTag ? ' <span class="date-tag ' + dateTagClass + '">' + dateTagPlaceholder + '</span>' : '';
     var badgeHtml = box.badge ? '<span class="badge-previsao">PREVISÃO</span>' : '';
     var header = '<div class="box-header">' + box.title + dateTagHtml + badgeHtml + '</div>';
     var body = '';
-    if (box.restoreLink) {
-      body += '<a href="#" class="restore-link" id="restore-hidden-link">Mostrar campos ocultos</a>';
-    }
-    if (box.type === 'saldo') {
-      body += fieldRowHTML({ id: box.saldoInicialId, label: 'Saldo inicial' });
+    if (box.restoreLink) body += '<a href="#" class="restore-link">Mostrar campos ocultos</a>';
+    if (box.type === 'saldoInicial') {
+      var toggleDisabled = box.signToggle === false;
+      body += '<div class="field-row" id="' + box.fieldId + '-row">' +
+        '<label for="' + box.fieldId + '">' + escapeHtml(box.fieldLabel) + '</label>' +
+        '<div class="field-input-wrap">' +
+        '<button type="button" class="sign-toggle"' + (toggleDisabled ? ' disabled title="Este campo não aceita valor negativo"' : '') + ' data-target="' + box.fieldId + '">+</button>' +
+        '<input type="text" inputmode="decimal" class="money-input" id="' + box.fieldId + '" placeholder="0,00">' +
+        '</div></div>';
+    } else if (box.type === 'saldo') {
+      body += '<div class="readonly-row"><label>Saldo anterior</label><span id="' + box.saldoInicialId + '-echo">R$ 0,00</span></div>';
       body += '<div class="readonly-row"><label>' + box.entradasLabel + '</label><span id="' + box.entradasRef + '-echo">R$ 0,00</span></div>';
       body += '<div class="readonly-row"><label>' + box.saidasLabel + '</label><span id="' + box.saidasRef + '-echo">R$ 0,00</span></div>';
       body += '<div class="total-row grand"><label>' + box.totalLabel + '</label><span id="' + box.totalId + '">R$ 0,00</span></div>';
@@ -387,13 +474,28 @@
       if (box.sublist) body += sublistHTML(box.sublist);
       body += '<div class="total-row grand"><label>' + box.totalLabel + '</label><span id="' + box.totalId + '">R$ 0,00</span></div>';
     }
-    var cls = 'box theme-' + theme + (box.dashed ? ' box-dashed' : '');
+    if (box.note) body += '<div class="box-note">' + escapeHtml(box.note) + '</div>';
+    var cls = 'box theme-' + theme + (box.dashed ? ' box-dashed' : '') + (box.light ? ' header-light' : '');
     return '<div class="' + cls + '" id="box-' + box.id + '">' + header + '<div class="box-body">' + body + '</div></div>';
   }
   function renderColumn(containerId, cfg) {
     var html = '<div class="column-heading ' + cfg.theme + '">' + cfg.heading + '</div>';
     cfg.boxes.forEach(function (box) { html += boxHTML(box, cfg.theme); });
     document.getElementById(containerId).innerHTML = html;
+  }
+  function renderStep1Box() {
+    document.getElementById('step1-box-container').innerHTML = boxHTML(STEP1_BOX, 'blue');
+    var row = document.getElementById('b_boletos_dda-row');
+    if (row) row.insertAdjacentHTML('afterend', '<div class="field-error" id="boletos-error"></div>');
+  }
+  function renderSaldoGeral() {
+    var html = '<div class="box saldo-geral-box">' +
+      '<div class="box-header">SALDO TOTAL</div>' +
+      '<div class="box-body">' +
+      '<div class="saldo-geral-value" id="saldo_geral">R$ 0,00</div>' +
+      '<div class="saldo-geral-caption">Saldo do cofre + Saldo das contas bancárias</div>' +
+      '</div></div>';
+    document.getElementById('saldo-geral-container').innerHTML = html;
   }
 
   // ================= Dynamic sub-lists =================
@@ -403,10 +505,12 @@
     row.className = 'sub-row';
     row.innerHTML =
       '<input type="text" class="desc-input" placeholder="Descrição">' +
-      '<input type="text" inputmode="decimal" class="value-input" placeholder="0,00">' +
+      '<input type="text" inputmode="decimal" class="value-input money-input" placeholder="0,00">' +
       '<button type="button" class="remove-btn" aria-label="Remover">\u00D7</button>';
     row.querySelector('.desc-input').value = desc || '';
-    row.querySelector('.value-input').value = val || '';
+    var valEl = row.querySelector('.value-input');
+    if (val) valEl.value = formatMasked(val);
+    attachMoneyMask(valEl);
     row.querySelector('.remove-btn').addEventListener('click', function () { row.remove(); recalc(); saveDraft(); });
     row.querySelectorAll('input').forEach(function (inp) {
       inp.addEventListener('input', function () { recalc(); saveDraft(); });
@@ -450,8 +554,11 @@
   function getState() {
     var values = {};
     ALL_BOXES.forEach(function (box) {
-      (box.fields || []).forEach(function (f) { values[f.id] = num(f.id); });
-      if (box.saldoInicialId) values[box.saldoInicialId] = num(box.saldoInicialId);
+      (box.fields || []).forEach(function (f) { if (!f.linkedFrom) values[f.id] = num(f.id); });
+      if (box.type === 'saldoInicial') values[box.fieldId] = numSigned(box.fieldId);
+    });
+    ALL_BOXES.forEach(function (box) {
+      (box.fields || []).forEach(function (f) { if (f.linkedFrom) values[f.id] = values[f.linkedFrom]; });
     });
     var sublists = {};
     ALL_SUBLIST_IDS.forEach(function (id) {
@@ -463,18 +570,16 @@
     var totals = {};
     totals.b_total_entradas = values.b_sicredi + values.b_itau + values.b_bradesco + values.b_banestes +
       values.b_sicoob + values.b_pix + values.b_depositos + sublists.b_outras_entradas.subtotal;
-    totals.b_total_saidas = values.b_pagamentos + values.b_estornos_pix + sublists.b_outras_saidas.subtotal;
+    totals.b_total_saidas = values.b_boletos_dda_pago + values.b_estornos_pix + sublists.b_outras_saidas.subtotal;
     totals.b_saldo_atual = values.b_saldo_inicial + totals.b_total_entradas - totals.b_total_saidas;
     totals.b_total_saidas_previstas = values.b_boletos_dda + sublists.b_outros_pag_prev.subtotal;
-    totals.b_saldo_previsto = totals.b_saldo_atual - totals.b_total_saidas_previstas;
 
-    totals.c_total_entradas = values.c_sangrias + values.c_convenios + sublists.c_outras_entradas.subtotal;
-    totals.c_total_saidas = values.c_pagamentos + values.c_depositos_bancarios + sublists.c_outras_saidas.subtotal;
+    totals.c_total_entradas = values.c_sangrias + sublists.c_outras_entradas.subtotal;
+    totals.c_total_saidas = values.c_depositos_bancarios + sublists.c_outras_saidas.subtotal;
     totals.c_saldo_atual = values.c_saldo_inicial + totals.c_total_entradas - totals.c_total_saidas;
-    totals.c_total_saidas_previstas = values.c_pagamentos_previstos + sublists.c_outros_pag_prev.subtotal;
-    totals.c_saldo_previsto = totals.c_saldo_atual - totals.c_total_saidas_previstas;
 
     totals.despesas_total = sublists.despesas_adicionais.subtotal;
+    totals.saldo_geral = totals.b_saldo_atual + totals.c_saldo_atual;
 
     return {
       loja: document.getElementById('loja').value,
@@ -487,18 +592,48 @@
 
   function recalc() {
     var s = getState();
+    function applyNegative(el, isNegative) {
+      if (!el) return;
+      el.classList.toggle('negative-value', isNegative);
+      el.style.color = isNegative ? '#a4161a' : '';
+    }
     ALL_BOXES.forEach(function (box) {
-      if (box.totalId) document.getElementById(box.totalId).textContent = fmt(s.totals[box.totalId] !== undefined ? s.totals[box.totalId] : s.sublists[box.sublist.id].subtotal);
-      if (box.sublist) document.getElementById(box.sublist.id + '-subtotal').textContent = fmt(s.sublists[box.sublist.id].subtotal);
+      if (box.totalId) {
+        var totalEl = document.getElementById(box.totalId);
+        var totalVal = s.totals[box.totalId];
+        totalEl.textContent = fmt(totalVal);
+        applyNegative(totalEl, totalVal < 0);
+      }
+      (box.fields || []).forEach(function (f) {
+        if (f.linkedFrom) {
+          var linkedEl = document.getElementById(f.id);
+          if (linkedEl) linkedEl.value = formatMasked(s.values[f.id]);
+        }
+      });
       if (box.type === 'saldo') {
-        document.getElementById(box.entradasRef + '-echo').textContent = fmt(s.totals[box.entradasRef]);
-        document.getElementById(box.saidasRef + '-echo').textContent = fmt(s.totals[box.saidasRef]);
+        var siEl = document.getElementById(box.saldoInicialId + '-echo');
+        var siVal = s.values[box.saldoInicialId];
+        siEl.textContent = dynamicSignedFmt(siVal);
+        applyNegative(siEl, siVal < 0);
+        document.getElementById(box.entradasRef + '-echo').textContent = signedFmt('+', s.totals[box.entradasRef]);
+        document.getElementById(box.saidasRef + '-echo').textContent = signedFmt('-', s.totals[box.saidasRef]);
       }
       if (box.type === 'previsto') {
-        document.getElementById(box.baseRef + '-echo').textContent = fmt(s.totals[box.baseRef]);
-        document.getElementById(box.subRef + '-echo').textContent = fmt(s.totals[box.subRef]);
+        document.getElementById(box.baseRef + '-echo').textContent = signedFmt('+', s.totals[box.baseRef]);
+        document.getElementById(box.subRef + '-echo').textContent = signedFmt('-', s.totals[box.subRef]);
       }
     });
+    var saldoGeralEl = document.getElementById('saldo_geral');
+    if (saldoGeralEl) {
+      var geralNeg = s.totals.saldo_geral < 0;
+      saldoGeralEl.textContent = dynamicSignedFmt(s.totals.saldo_geral);
+      saldoGeralEl.style.color = geralNeg ? '#a4161a' : '#29bf12';
+      var sgBox = document.querySelector('.saldo-geral-box');
+      if (sgBox) {
+        sgBox.classList.toggle('is-negative', geralNeg);
+        sgBox.classList.toggle('is-positive', !geralNeg);
+      }
+    }
     updateRestoreLinks();
   }
 
@@ -507,21 +642,20 @@
     var hoje = document.getElementById('data-hoje').value;
     var antTxt = ant ? '(' + formatDateBr(ant) + ')' : '(--/--/----)';
     var hojeTxt = hoje ? '(' + formatDateBr(hoje) + ')' : '(--/--/----)';
+    var antPrefixedTxt = ant ? '(no início do dia ' + formatDateBr(ant) + ')' : '(no início do dia --/--/----)';
     document.querySelectorAll('.date-anterior-tag').forEach(function (el) { el.textContent = antTxt; });
     document.querySelectorAll('.date-hoje-tag').forEach(function (el) { el.textContent = hojeTxt; });
+    document.querySelectorAll('.date-anterior-tag-prefixed').forEach(function (el) { el.textContent = antPrefixedTxt; });
   }
 
   // ================= Draft persistence (per-viewer convenience) =================
-  var DRAFT_KEY = 'relatorio-movimentacoes-draft-v1';
+  var DRAFT_KEY = 'relatorio-movimentacoes-draft-v2';
   function saveDraft() {
     try {
       var s = getState();
-      var draft = {
-        loja: s.loja, dataAnterior: s.dataAnterior, dataHoje: s.dataHoje,
-        values: {}, sublists: {}
-      };
-      Object.keys(s.values).forEach(function (k) { draft.values[k] = document.getElementById(k) ? document.getElementById(k).value : ''; });
-      ALL_SUBLIST_IDS.forEach(function (id) { draft.sublists[id] = readSubRows(id); });
+      var draft = { loja: s.loja, dataAnterior: s.dataAnterior, dataHoje: s.dataHoje, values: {}, sublists: {}, hidden: Object.keys(s.hidden) };
+      Object.keys(s.values).forEach(function (k) { draft.values[k] = s.values[k]; });
+      ALL_SUBLIST_IDS.forEach(function (id) { draft.sublists[id] = s.sublists[id].items; });
       localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
     } catch (e) { /* per-viewer convenience only — ignore failures */ }
   }
@@ -535,40 +669,75 @@
       if (d.dataHoje) document.getElementById('data-hoje').value = d.dataHoje;
       Object.keys(d.values || {}).forEach(function (k) {
         var el = document.getElementById(k);
-        if (el) el.value = d.values[k];
+        if (el && d.values[k]) el.value = formatMasked(d.values[k]);
       });
       ALL_SUBLIST_IDS.forEach(function (id) {
         (d.sublists && d.sublists[id] || []).forEach(function (it) { addSubRow(id, it.desc, it.val); });
+      });
+      (d.hidden || []).forEach(function (fid) {
+        var row = document.getElementById(fid + '-row');
+        if (row) { row.style.display = 'none'; var inp = row.querySelector('input'); if (inp) { inp.value = ''; inp.disabled = true; } }
+      });
+      SALDO_INICIAL_IDS.forEach(function (fid) {
+        var v = d.values ? d.values[fid] : undefined;
+        if (v !== undefined && v < 0) {
+          var el = document.getElementById(fid);
+          if (el) el.dataset.sign = '-1';
+          var btn = document.querySelector('.sign-toggle[data-target="' + fid + '"]');
+          if (btn) { btn.textContent = '\u2212'; btn.classList.add('negative'); }
+        }
       });
       return true;
     } catch (e) { return false; }
   }
 
-  // ================= PDF generation (single page, two columns) =================
-  var PALETTE = { blue: [17, 150, 210], pink: [236, 41, 143], blueLight: [138, 220, 248], pinkLight: [247, 182, 216], gray: [110, 118, 128] };
+  // ================= PDF: Relatório de Movimentações (1 página, 2 colunas) =================
+  var PALETTE = { blue: [17, 150, 210], pink: [236, 41, 143], blueLight: [138, 220, 248], pinkLight: [247, 182, 216], wine: [164, 22, 26], positive: [41, 191, 18] };
+
+  function pdfHeader(doc, marginX, title, colorRgb) {
+    var c = colorRgb || [20, 20, 20];
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(c[0], c[1], c[2]);
+    doc.text('FARMÁCIA DO TRABALHADOR CAPIXABA', marginX, 10);
+    doc.setFontSize(15);
+    doc.text(title, marginX, 17);
+  }
 
   function buildPdf(state) {
     var jsPDFCtor = window.jspdf && window.jspdf.jsPDF;
     if (!jsPDFCtor) return null;
     var doc = new jsPDFCtor({ unit: 'mm', format: 'a4' });
-    var pageW = 210, marginX = 10, gutter = 6;
-    var colW = (pageW - marginX * 2 - gutter) / 2;
-    var xLeft = marginX, xRight = marginX + colW + gutter;
-    var topY = 14;
-
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(PALETTE.pink[0], PALETTE.pink[1], PALETTE.pink[2]);
-    doc.text('Relatório de Movimentações', marginX, topY);
+    var marginX = 10;
+    pdfHeader(doc, marginX, 'Relatório de Movimentações');
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(90, 90, 90);
-    var infoLine = (state.loja || '-') + '   |   Dia anterior: ' + (formatDateBr(state.dataAnterior) || '-') + '   |   Hoje: ' + (formatDateBr(state.dataHoje) || '-');
-    doc.text(infoLine, marginX, topY + 5.5);
+    var infoLine = 'Data das movimentações: ' + (formatDateBr(state.dataAnterior) || '-');
+    doc.text(infoLine, marginX, 22.5);
 
-    var startY = topY + 11;
-    drawColumn(doc, xLeft, colW, startY, CONFIG.bancarias, state, 'blue');
-    drawColumn(doc, xRight, colW, startY, CONFIG.cofre, state, 'pink');
+    var colW = (210 - marginX * 2 - 6) / 2;
+    var xLeft = marginX, xRight = marginX + colW + 6;
+    var startY = 28;
+    var yLeft = drawColumn(doc, xLeft, colW, startY, CONFIG.bancarias, state, 'blue');
+    var yRight = drawColumn(doc, xRight, colW, startY, CONFIG.cofre, state, 'pink');
+    var yGeral = Math.max(yLeft, yRight) + 4;
+
+    var fullW = colW * 2 + 6;
+    var bandW = fullW * 0.4;
+    var xGeral = xLeft + (fullW - bandW) / 2;
+    var bandH = 22;
+    var geralNegative = state.totals.saldo_geral < 0;
+    var geralColor = geralNegative ? PALETTE.wine : PALETTE.positive;
+    doc.setFillColor(geralColor[0], geralColor[1], geralColor[2]);
+    doc.rect(xGeral, yGeral, bandW, 6, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(255, 255, 255);
+    doc.text('SALDO TOTAL', xGeral + bandW / 2, yGeral + 4.2, { align: 'center' });
+    doc.setDrawColor(geralColor[0], geralColor[1], geralColor[2]);
+    doc.rect(xGeral, yGeral, bandW, bandH);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(geralColor[0], geralColor[1], geralColor[2]);
+    doc.text(dynamicSignedFmt(state.totals.saldo_geral), xGeral + bandW / 2, yGeral + 13, { align: 'center' });
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(90, 90, 90);
+    doc.text('Saldo do cofre + Saldo das contas bancárias', xGeral + bandW / 2, yGeral + 19, { align: 'center' });
 
     doc.setFont('helvetica', 'italic'); doc.setFontSize(7); doc.setTextColor(150, 150, 150);
     doc.text('Gerado em ' + new Date().toLocaleString('pt-BR'), marginX, 289);
-
     return doc;
   }
 
@@ -579,7 +748,7 @@
 
     doc.setFillColor(color[0], color[1], color[2]);
     doc.rect(x, y, w, 6, 'F');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5); doc.setTextColor(255, 255, 255);
     doc.text(cfg.heading.toUpperCase(), x + 2.5, y + 4.2);
     y += 9;
 
@@ -591,23 +760,24 @@
   }
 
   function drawBox(doc, x, w, y, box, state, color, lightColor) {
-    var rowH = 4.1, padX = 2.5;
+    var rowH = 4.8, padX = 2.5;
     var boxStartY = y;
     var lines = [];
-
     function pushRow(label, value, opts) {
-      lines.push({ label: label, value: value, bold: !!(opts && opts.bold), indent: (opts && opts.indent) || 0 });
+      lines.push({ label: label, value: value, bold: !!(opts && opts.bold), indent: (opts && opts.indent) || 0, negative: !!(opts && opts.negative) });
     }
 
-    if (box.type === 'saldo') {
-      pushRow('Saldo inicial', fmt(state.values[box.saldoInicialId]));
-      pushRow(box.entradasLabel, fmt(state.totals[box.entradasRef]));
-      pushRow(box.saidasLabel, fmt(state.totals[box.saidasRef]));
-      pushRow(box.totalLabel, fmt(state.totals[box.totalId]), { bold: true });
+    if (box.type === 'saldoInicial') {
+      pushRow(box.fieldLabel, dynamicSignedFmt(state.values[box.fieldId]), { negative: state.values[box.fieldId] < 0 });
+    } else if (box.type === 'saldo') {
+      pushRow('Saldo anterior', dynamicSignedFmt(state.values[box.saldoInicialId]), { negative: state.values[box.saldoInicialId] < 0 });
+      pushRow(box.entradasLabel, signedFmt('+', state.totals[box.entradasRef]));
+      pushRow(box.saidasLabel, signedFmt('-', state.totals[box.saidasRef]));
+      pushRow(box.totalLabel, fmt(state.totals[box.totalId]), { bold: true, negative: state.totals[box.totalId] < 0 });
     } else if (box.type === 'previsto') {
-      pushRow(box.baseLabel, fmt(state.totals[box.baseRef]));
-      pushRow(box.subLabel, fmt(state.totals[box.subRef]));
-      pushRow(box.totalLabel, fmt(state.totals[box.totalId]), { bold: true });
+      pushRow(box.baseLabel, signedFmt('+', state.totals[box.baseRef]));
+      pushRow(box.subLabel, signedFmt('-', state.totals[box.subRef]));
+      pushRow(box.totalLabel, fmt(state.totals[box.totalId]), { bold: true, negative: state.totals[box.totalId] < 0 });
     } else {
       (box.fields || []).forEach(function (f) {
         if (state.hidden[f.id]) return;
@@ -619,15 +789,23 @@
         if (realItems.length) {
           pushRow(box.sublist.title + ':', '', { bold: true });
           realItems.forEach(function (it) { pushRow(it.desc || '(sem descrição)', fmt(it.val), { indent: 3 }); });
-          pushRow('Subtotal', fmt(sl.subtotal), { indent: 3 });
         }
       }
-      pushRow(box.totalLabel, fmt(state.totals[box.totalId]), { bold: true });
+      pushRow(box.totalLabel, fmt(state.totals[box.totalId]), { bold: true, negative: state.totals[box.totalId] < 0 });
     }
 
-    var headerH = 5.2;
-    var bodyH = lines.length * rowH + 2;
+    var headerH = 6.2;
+    var noteLines = [];
+    var noteLineH = 3.4;
+    if (box.note) {
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(6.6);
+      noteLines = doc.splitTextToSize(box.note, w - padX * 2);
+    }
+    var bodyH = lines.length * rowH + 2 + (noteLines.length ? noteLines.length * noteLineH + 2 : 0);
     var totalH = headerH + bodyH;
+    var useLight = !!box.light;
+    var headerColor = useLight ? lightColor : color;
+    var headerText = useLight ? (color === PALETTE.blue ? [13, 60, 82] : [107, 17, 64]) : [255, 255, 255];
 
     doc.setDrawColor(color[0], color[1], color[2]);
     doc.setLineWidth(box.dashed ? 0.3 : 0.2);
@@ -635,27 +813,106 @@
     doc.rect(x, boxStartY, w, totalH);
     if (doc.setLineDash) doc.setLineDash([]);
 
-    doc.setFillColor(color[0], color[1], color[2]);
+    doc.setFillColor(headerColor[0], headerColor[1], headerColor[2]);
     doc.rect(x, boxStartY, w, headerH, 'F');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(255, 255, 255);
-    var titleTxt = box.title + (box.dateTag ? '  ' + (box.dateTag === 'anterior' ? (formatDateBr(state.dataAnterior) ? '(' + formatDateBr(state.dataAnterior) + ')' : '') : (formatDateBr(state.dataHoje) ? '(' + formatDateBr(state.dataHoje) + ')' : '')) : '');
-    doc.text(titleTxt, x + padX, boxStartY + 3.6);
+    var dateTxt = box.dateTag ? (box.dateTag === 'anterior' ? formatDateBr(state.dataAnterior) : formatDateBr(state.dataHoje)) : '';
+    var titleTxt = box.title + (dateTxt ? (box.type === 'saldoInicial' ? '  (no início do dia ' + dateTxt + ')' : '  (' + dateTxt + ')') : '');
+    var titleFontSize = 9.2;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(titleFontSize); doc.setTextColor(headerText[0], headerText[1], headerText[2]);
+    var maxTitleW = w - padX * 2 - (box.badge ? 16 : 0);
+    while (titleFontSize > 6 && doc.getTextWidth(titleTxt) > maxTitleW) {
+      titleFontSize -= 0.4;
+      doc.setFontSize(titleFontSize);
+    }
+    doc.text(titleTxt, x + padX, boxStartY + 4.3);
     if (box.badge) {
-      doc.setFontSize(6);
-      doc.text('PREVISÃO', x + w - padX, boxStartY + 3.6, { align: 'right' });
+      doc.setFontSize(6.4);
+      doc.text('PREVISÃO', x + w - padX, boxStartY + 4.3, { align: 'right' });
     }
 
-    var ly = boxStartY + headerH + 3.4;
+    var ly = boxStartY + headerH + 3.9;
     lines.forEach(function (ln) {
       doc.setFont('helvetica', ln.bold ? 'bold' : 'normal');
-      doc.setFontSize(ln.bold ? 7.6 : 7.2);
-      doc.setTextColor(30, 30, 30);
+      doc.setFontSize(ln.bold ? 8.4 : 8.0);
+      if (ln.negative) { doc.setTextColor(PALETTE.wine[0], PALETTE.wine[1], PALETTE.wine[2]); }
+      else { doc.setTextColor(20, 20, 20); }
       doc.text(String(ln.label), x + padX + ln.indent, ly);
       if (ln.value !== '') doc.text(String(ln.value), x + w - padX, ly, { align: 'right' });
       ly += rowH;
     });
+    if (noteLines.length) {
+      ly += 1;
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(6.6); doc.setTextColor(120, 120, 120);
+      noteLines.forEach(function (nl) {
+        doc.text(nl, x + padX, ly);
+        ly += noteLineH;
+      });
+    }
 
     return boxStartY + totalH;
+  }
+
+  // ================= PDF: Relatório de contas a pagar (folha inteira) =================
+  function buildContasAPagarPdf(state) {
+    var jsPDFCtor = window.jspdf && window.jspdf.jsPDF;
+    if (!jsPDFCtor) return null;
+    var doc = new jsPDFCtor({ unit: 'mm', format: 'a4' });
+    var marginL = 18, marginR = 18, pageW = 210;
+    var contentRight = pageW - marginR;
+    var checkboxSize = 4.5;
+    var checkboxX = contentRight - checkboxSize;
+    var valueRightX = checkboxX - 8;
+
+    pdfHeader(doc, marginL, 'Relatório de contas a pagar');
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10.5); doc.setTextColor(90, 90, 90);
+    doc.text((state.loja || '-') + '   |   Data: ' + (formatDateBr(state.dataHoje) || '-'), marginL, 24);
+
+    var y = 34;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(30, 30, 30);
+    doc.text('Descrição', marginL, y);
+    doc.text('Valor', valueRightX, y, { align: 'right' });
+    y += 2.5;
+    doc.setDrawColor(180, 180, 180); doc.setLineWidth(0.5);
+    doc.line(marginL, y, contentRight, y);
+    y += 9;
+
+    var rows = [];
+    if (state.values.b_boletos_dda) rows.push({ desc: 'Boletos (DDA)', val: state.values.b_boletos_dda });
+    (state.sublists.b_outros_pag_prev.items || []).forEach(function (it) {
+      if (it.desc !== '' || it.val !== 0) rows.push({ desc: it.desc || '(sem descrição)', val: it.val });
+    });
+
+    if (!rows.length) {
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(10.5); doc.setTextColor(140, 140, 140);
+      doc.text('Nenhum pagamento informado.', marginL, y);
+      y += 10;
+    } else {
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(11.5);
+      rows.forEach(function (r) {
+        if (y > 265) { doc.addPage(); y = 24; }
+        doc.setTextColor(20, 20, 20);
+        doc.text(r.desc, marginL, y);
+        doc.text(fmt(r.val), valueRightX, y, { align: 'right' });
+        doc.setDrawColor(60, 60, 60); doc.setLineWidth(0.35);
+        doc.rect(checkboxX, y - checkboxSize + 1.1, checkboxSize, checkboxSize);
+        y += 6.5;
+        doc.setDrawColor(225, 225, 225); doc.setLineWidth(0.2);
+        doc.line(marginL, y - 3, contentRight, y - 3);
+        y += 3;
+      });
+    }
+
+    y += 6;
+    doc.setDrawColor(PALETTE.blue[0], PALETTE.blue[1], PALETTE.blue[2]); doc.setLineWidth(0.6);
+    doc.line(marginL, y, contentRight, y);
+    y += 9;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(13.5); doc.setTextColor(20, 20, 20);
+    doc.text('Total de saídas previstas', marginL, y);
+    doc.text(fmt(state.totals.b_total_saidas_previstas), contentRight, y, { align: 'right' });
+
+    doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(150, 150, 150);
+    doc.text('Gerado em ' + new Date().toLocaleString('pt-BR'), marginL, 289);
+    return doc;
   }
 
   async function getDownloadsCapability() {
@@ -671,9 +928,24 @@
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
   }
+  async function saveOrDownload(filename, blob) {
+    var downloads = await getDownloadsCapability();
+    if (downloads) {
+      try { var result = await downloads.save({ filename: filename, data: blob }); return { ok: true, msg: result.status === 'saved' ? 'PDF salvo com sucesso.' : 'PDF enviado.' }; }
+      catch (err) { if (err && err.code === 'declined') return { ok: false, cancelled: true }; }
+    }
+    try { browserDownload(filename, blob); return { ok: true, msg: 'PDF baixado com sucesso.' }; }
+    catch (e) { return { ok: false, msg: 'Não foi possível gerar o download. Tente novamente ou use outro navegador.' }; }
+  }
   function setStatus(msg, kind) {
     var el = document.getElementById('status-msg');
     el.textContent = msg; el.className = kind || '';
+  }
+
+  function goToStep(n) {
+    document.body.classList.remove('step1', 'step2');
+    document.body.classList.add('step' + n);
+    window.scrollTo(0, 0);
   }
 
   // ================= Wiring =================
@@ -690,6 +962,15 @@
           if (inp) { inp.value = ''; inp.disabled = true; }
         }
         recalc(); saveDraft();
+      } else if (e.target.classList.contains('sign-toggle')) {
+        var targetId = e.target.getAttribute('data-target');
+        var input = document.getElementById(targetId);
+        var current = input.dataset.sign === '-1' ? -1 : 1;
+        var next = current * -1;
+        input.dataset.sign = String(next);
+        e.target.textContent = next === -1 ? '\u2212' : '+';
+        e.target.classList.toggle('negative', next === -1);
+        recalc(); saveDraft();
       } else if (e.target.classList.contains('restore-link')) {
         e.preventDefault();
         var box = e.target.closest('.box-body');
@@ -705,6 +986,10 @@
     });
 
     document.body.addEventListener('input', function (e) {
+      if (e.target.id === 'b_boletos_dda') {
+        var boletosError = document.getElementById('boletos-error');
+        if (boletosError) boletosError.textContent = '';
+      }
       if (e.target.matches('input, select')) { recalc(); saveDraft(); }
     });
     document.body.addEventListener('change', function (e) {
@@ -712,14 +997,35 @@
       if (e.target.matches('input, select')) { recalc(); saveDraft(); }
     });
 
+    var clearConfirmTimeout = null;
     document.getElementById('btn-clear').addEventListener('click', function () {
-      if (!window.confirm('Limpar todos os campos do formulário?')) return;
+      var btn = this;
+      if (!btn.classList.contains('confirm-pending')) {
+        btn.classList.add('confirm-pending');
+        btn.dataset.originalText = btn.textContent;
+        btn.textContent = 'Confirmar limpeza?';
+        clearConfirmTimeout = setTimeout(function () {
+          btn.classList.remove('confirm-pending');
+          btn.textContent = btn.dataset.originalText;
+        }, 4000);
+        return;
+      }
+      clearTimeout(clearConfirmTimeout);
+      btn.classList.remove('confirm-pending');
+      btn.textContent = btn.dataset.originalText;
+
       document.querySelectorAll('.box input[type="text"]').forEach(function (i) { i.value = ''; });
       document.querySelectorAll('.box .field-row').forEach(function (r) {
         r.style.display = '';
         var inp = r.querySelector('input'); if (inp) inp.disabled = false;
       });
       ALL_SUBLIST_IDS.forEach(function (id) { document.getElementById(id + '-list').innerHTML = ''; addSubRow(id); });
+      SALDO_INICIAL_IDS.forEach(function (fid) {
+        var el = document.getElementById(fid);
+        if (el) delete el.dataset.sign;
+        var toggle = document.querySelector('.sign-toggle[data-target="' + fid + '"]');
+        if (toggle) { toggle.textContent = '+'; toggle.classList.remove('negative'); }
+      });
       document.getElementById('data-anterior').value = yesterdayStr();
       document.getElementById('data-hoje').value = todayStr();
       updateDateTags(); recalc();
@@ -727,11 +1033,47 @@
       setStatus('', '');
     });
 
+    document.getElementById('btn-pdf-contas').addEventListener('click', async function () {
+      setStatus('', '');
+      var state = getState();
+      if (!state.loja || !state.dataHoje) {
+        setStatus('Selecione a loja e a data de hoje antes de baixar o PDF.', 'error');
+        return;
+      }
+      var doc = buildContasAPagarPdf(state);
+      if (!doc) {
+        setStatus('Não foi possível carregar o gerador de PDF. Recarregue a página e tente novamente.', 'error');
+        return;
+      }
+      var blob = doc.output('blob');
+      var filename = 'contas_a_pagar_' + slugify(state.loja) + '_' + state.dataHoje + '.pdf';
+      var res = await saveOrDownload(filename, blob);
+      setStatus(res.cancelled ? 'Download cancelado.' : (res.msg || ''), res.ok ? 'success' : 'error');
+    });
+
+    document.getElementById('btn-continuar').addEventListener('click', function () {
+      setStatus('', '');
+      var state = getState();
+      var boletosError = document.getElementById('boletos-error');
+      if (!state.values.b_boletos_dda || state.values.b_boletos_dda <= 0) {
+        if (boletosError) boletosError.textContent = 'Preencha o valor de boletos (DDA) antes de continuar.';
+        return;
+      }
+      if (boletosError) boletosError.textContent = '';
+      goToStep(2);
+      recalc();
+      saveDraft();
+    });
+
+    document.getElementById('btn-voltar').addEventListener('click', function () {
+      goToStep(1);
+    });
+
     document.getElementById('btn-pdf').addEventListener('click', async function () {
       setStatus('', '');
       var state = getState();
-      if (!state.loja || !state.dataAnterior || !state.dataHoje) {
-        setStatus('Selecione a loja e as duas datas antes de gerar o PDF.', 'error');
+      if (!state.loja || !state.dataAnterior) {
+        setStatus('Selecione a loja e a data das movimentações antes de gerar o PDF.', 'error');
         return;
       }
       var doc = buildPdf(state);
@@ -741,25 +1083,16 @@
       }
       var blob = doc.output('blob');
       var filename = 'relatorio_movimentacoes_' + slugify(state.loja) + '_' + state.dataAnterior + '.pdf';
-
-      var downloads = await getDownloadsCapability();
-      if (downloads) {
-        try {
-          var result = await downloads.save({ filename: filename, data: blob });
-          setStatus(result.status === 'saved' ? 'PDF salvo com sucesso.' : 'PDF enviado.', 'success');
-          return;
-        } catch (err) {
-          if (err && err.code === 'declined') { setStatus('Download cancelado.', ''); return; }
-        }
-      }
-      try { browserDownload(filename, blob); setStatus('PDF baixado com sucesso.', 'success'); }
-      catch (e) { setStatus('Não foi possível gerar o download. Tente novamente ou use outro navegador.', 'error'); }
+      var res = await saveOrDownload(filename, blob);
+      setStatus(res.cancelled ? 'Download cancelado.' : (res.msg || ''), res.ok ? 'success' : 'error');
     });
   }
 
   // ================= Init =================
   renderColumn('col-bancarias', CONFIG.bancarias);
   renderColumn('col-cofre', CONFIG.cofre);
+  renderStep1Box();
+  renderSaldoGeral();
   wireEvents();
 
   document.getElementById('data-anterior').value = yesterdayStr();
@@ -767,6 +1100,9 @@
   var hadDraft = loadDraft();
   ALL_SUBLIST_IDS.forEach(function (id) {
     if (document.querySelectorAll('#' + id + '-list .sub-row').length === 0) addSubRow(id);
+  });
+  document.querySelectorAll('.money-input').forEach(function (el) {
+    if (!el.classList.contains('value-input')) attachMoneyMask(el);
   });
   updateDateTags();
   updateRestoreLinks();
