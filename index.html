@@ -170,13 +170,21 @@
   body.step2 #actions-step1 { display: none; }
   body.step2 #actions-step2 { display: flex; }
   body.step2 .intro-step1,
-  body.step2 #step1-box-container { display: none; }
+  body.step2 #step1-box-container,
+  body.step2 #step1-obs-container { display: none; }
   body.step1 .columns,
   body.step1 #saldo-geral-container { display: none; }
-  #step1-box-container { max-width: 640px; margin: 0 auto; padding-bottom: 28px; }
+  #step1-box-container { max-width: 640px; margin: 0 auto; }
   #step1-box-container .box-header { font-size: 1.05rem; padding: 12px 16px; }
   #step1-box-container .box-body { padding: 22px; }
   #step1-box-container label { font-size: 0.85rem; }
+  #step1-obs-container { max-width: 640px; margin: 0 auto; padding-bottom: 28px; }
+  #step1-obs-container .box-body { padding: 18px 22px; }
+  .obs-textarea {
+    width: 100%; min-height: 90px; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--input-bg); color: var(--text); font-size: 0.92rem; font-family: inherit; resize: vertical;
+  }
+  .obs-textarea:focus { outline: 2px solid var(--blue); outline-offset: 1px; }
 
   #saldo-geral-container { display: flex; justify-content: center; }
   .saldo-geral-box { margin-top: 4px; min-width: 40%; width: fit-content; border-color: var(--border); }
@@ -236,6 +244,15 @@
     <p class="intro-step1">Preencha as saídas previstas de hoje para gerar o relatório de contas a pagar e continuar para o relatório completo.</p>
     <div id="step1-box-container"></div>
 
+    <div id="step1-obs-container">
+      <div class="box theme-blue">
+        <div class="box-header">OBSERVAÇÕES</div>
+        <div class="box-body">
+          <textarea id="obs_contas_pagar" class="obs-textarea" rows="4" placeholder="Observações sobre os pagamentos de hoje..."></textarea>
+        </div>
+      </div>
+    </div>
+
     <div class="columns">
       <div id="col-bancarias"></div>
       <div id="col-cofre"></div>
@@ -243,18 +260,18 @@
     <div id="saldo-geral-container"></div>
 
     <div class="actions" id="actions-step1">
-      <button type="button" class="pdf-btn" id="btn-pdf-contas">Baixar PDF</button>
+      <button type="button" class="pdf-btn" id="btn-img-contas">Baixar imagem</button>
       <button type="button" class="primary" id="btn-continuar">Continuar</button>
+      <button type="button" class="secondary" id="btn-clear-step1">Limpar formulário</button>
     </div>
     <div class="actions" id="actions-step2">
       <button type="button" class="secondary" id="btn-voltar">← Voltar</button>
-      <button type="button" class="pdf-btn" id="btn-pdf">Baixar PDF</button>
+      <button type="button" class="pdf-btn" id="btn-img">Baixar imagem</button>
       <button type="button" class="secondary" id="btn-clear">Limpar formulário</button>
     </div>
     <p id="status-msg"></p>
   </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 (function () {
   "use strict";
@@ -590,6 +607,7 @@
       loja: document.getElementById('loja').value,
       dataAnterior: document.getElementById('data-anterior').value,
       dataHoje: document.getElementById('data-hoje').value,
+      obsContasPagar: document.getElementById('obs_contas_pagar').value.trim(),
       values: values, sublists: sublists, totals: totals,
       hidden: currentHiddenIds()
     };
@@ -658,7 +676,7 @@
   function saveDraft() {
     try {
       var s = getState();
-      var draft = { loja: s.loja, dataAnterior: s.dataAnterior, dataHoje: s.dataHoje, values: {}, sublists: {}, hidden: Object.keys(s.hidden) };
+      var draft = { loja: s.loja, dataAnterior: s.dataAnterior, dataHoje: s.dataHoje, obsContasPagar: s.obsContasPagar, values: {}, sublists: {}, hidden: Object.keys(s.hidden) };
       Object.keys(s.values).forEach(function (k) { draft.values[k] = s.values[k]; });
       ALL_SUBLIST_IDS.forEach(function (id) { draft.sublists[id] = s.sublists[id].items; });
       localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
@@ -672,6 +690,7 @@
       if (d.loja) document.getElementById('loja').value = d.loja;
       if (d.dataAnterior) document.getElementById('data-anterior').value = d.dataAnterior;
       if (d.dataHoje) document.getElementById('data-hoje').value = d.dataHoje;
+      if (d.obsContasPagar) document.getElementById('obs_contas_pagar').value = d.obsContasPagar;
       Object.keys(d.values || {}).forEach(function (k) {
         var el = document.getElementById(k);
         if (el && d.values[k]) el.value = formatMasked(d.values[k]);
@@ -712,10 +731,7 @@
     return titleY + 5.5;
   }
 
-  function buildPdf(state) {
-    var jsPDFCtor = window.jspdf && window.jspdf.jsPDF;
-    if (!jsPDFCtor) return null;
-    var doc = new jsPDFCtor({ unit: 'mm', format: 'a4' });
+  function buildPdfContent(doc, state, fitFooterToContent) {
     var marginX = 10;
     var afterHeaderY = pdfHeader(doc, marginX, 'Relatório de Movimentações');
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(90, 90, 90);
@@ -746,9 +762,9 @@
     doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(90, 90, 90);
     doc.text('Saldo do cofre + Saldo das contas bancárias', xGeral + bandW / 2, yGeral + 19, { align: 'center' });
 
+    var footerY = fitFooterToContent ? (yGeral + bandH + 7) : 289;
     doc.setFont('helvetica', 'italic'); doc.setFontSize(7); doc.setTextColor(150, 150, 150);
-    doc.text('Gerado em ' + new Date().toLocaleString('pt-BR'), marginX, 289);
-    return doc;
+    doc.text('Gerado em ' + new Date().toLocaleString('pt-BR'), marginX, footerY);
   }
 
   function drawColumn(doc, x, w, startY, cfg, state, theme) {
@@ -863,10 +879,7 @@
   }
 
   // ================= PDF: Relatório de contas a pagar (folha inteira) =================
-  function buildContasAPagarPdf(state) {
-    var jsPDFCtor = window.jspdf && window.jspdf.jsPDF;
-    if (!jsPDFCtor) return null;
-    var doc = new jsPDFCtor({ unit: 'mm', format: 'a4' });
+  function buildContasAPagarContent(doc, state, pageBreakY, fitFooterToContent) {
     var marginL = 18, marginR = 18, pageW = 210;
     var contentRight = pageW - marginR;
     var checkboxSize = 4.5;
@@ -899,7 +912,7 @@
     } else {
       doc.setFont('helvetica', 'normal'); doc.setFontSize(11.5);
       rows.forEach(function (r) {
-        if (y > 265) { doc.addPage(); y = 24; }
+        if (y > pageBreakY) { doc.addPage(); y = 24; }
         doc.setTextColor(20, 20, 20);
         doc.text(r.desc, marginL, y);
         doc.text(fmt(r.val), valueRightX, y, { align: 'right' });
@@ -920,9 +933,147 @@
     doc.text('Total de saídas previstas', marginL, y);
     doc.text(fmt(state.totals.b_total_saidas_previstas), contentRight, y, { align: 'right' });
 
+    if (state.obsContasPagar) {
+      y += 12;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(30, 30, 30);
+      doc.text('Observações', marginL, y);
+      y += 5.5;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(60, 60, 60);
+      var obsLines = doc.splitTextToSize(state.obsContasPagar, contentRight - marginL);
+      obsLines.forEach(function (ln) {
+        if (y > pageBreakY) { doc.addPage(); y = 24; }
+        doc.text(ln, marginL, y);
+        y += 5;
+      });
+    }
+
+    var footerY = fitFooterToContent ? (y + 10) : 289;
     doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(150, 150, 150);
-    doc.text('Gerado em ' + new Date().toLocaleString('pt-BR'), marginL, 289);
-    return doc;
+    doc.text('Gerado em ' + new Date().toLocaleString('pt-BR'), marginL, footerY);
+  }
+
+  // ================= Canvas "PDF" shim — reuses the exact same drawing =================
+  // functions above (buildPdfContent / buildContasAPagarContent / drawColumn / drawBox /
+  // pdfHeader) to render the report onto a <canvas> instead of a jsPDF document, so the
+  // image export always matches the PDF pixel-for-pixel without duplicating any layout code.
+  var MM_PER_PT = 0.352778;
+  var _logoImagePromise = null;
+  function preloadLogoImage() {
+    if (_logoImagePromise) return _logoImagePromise;
+    _logoImagePromise = new Promise(function (resolve) {
+      var img = new Image();
+      img.onload = function () { resolve(img); };
+      img.onerror = function () { resolve(null); };
+      img.src = LOGO_DATA_URL;
+    });
+    return _logoImagePromise;
+  }
+
+  function createCanvasPdfShim(scale, logoImg) {
+    var pageWmm = 210, ceilingHmm = 2200;
+    var canvas = document.createElement('canvas');
+    canvas.width = Math.round(pageWmm * scale);
+    canvas.height = Math.round(ceilingHmm * scale);
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.textBaseline = 'alphabetic';
+
+    var st = { weight: 'normal', style: 'normal', size: 10, fill: 'rgb(0,0,0)' };
+    var usedMaxY = 0;
+    function trackY(y) { if (y > usedMaxY) usedMaxY = y; }
+    function applyFont() {
+      var w = st.weight === 'bold' ? 'bold ' : '';
+      var s = st.style === 'italic' ? 'italic ' : '';
+      var px = st.size * MM_PER_PT * scale;
+      ctx.font = s + w + px.toFixed(2) + 'px helvetica, Arial, sans-serif';
+    }
+    applyFont();
+
+    var shim = {
+      setFont: function (family, style) {
+        st.weight = (style === 'bold') ? 'bold' : 'normal';
+        st.style = (style === 'italic') ? 'italic' : 'normal';
+        applyFont();
+      },
+      setFontSize: function (size) { st.size = size; applyFont(); },
+      setTextColor: function (r, g, b) { st.fill = 'rgb(' + r + ',' + g + ',' + b + ')'; ctx.fillStyle = st.fill; },
+      setFillColor: function (r, g, b) { shim._fillColor = 'rgb(' + r + ',' + g + ',' + b + ')'; },
+      setDrawColor: function (r, g, b) { ctx.strokeStyle = 'rgb(' + r + ',' + g + ',' + b + ')'; },
+      setLineWidth: function (w) { ctx.lineWidth = Math.max(0.4, w * scale); },
+      setLineDash: function (arr) { ctx.setLineDash((arr || []).map(function (v) { return v * scale; })); },
+      text: function (str, x, y, opts) {
+        opts = opts || {};
+        ctx.fillStyle = st.fill;
+        ctx.textAlign = opts.align || 'left';
+        ctx.fillText(String(str), x * scale, y * scale);
+        ctx.textAlign = 'left';
+        trackY(y);
+      },
+      rect: function (x, y, w, h, style) {
+        if (style === 'F') {
+          ctx.fillStyle = shim._fillColor || '#000';
+          ctx.fillRect(x * scale, y * scale, w * scale, h * scale);
+        } else {
+          ctx.strokeRect(x * scale, y * scale, w * scale, h * scale);
+        }
+        trackY(y + h);
+      },
+      line: function (x1, y1, x2, y2) {
+        ctx.beginPath();
+        ctx.moveTo(x1 * scale, y1 * scale);
+        ctx.lineTo(x2 * scale, y2 * scale);
+        ctx.stroke();
+        trackY(Math.max(y1, y2));
+      },
+      addImage: function (dataUrl, type, x, y, w, h) {
+        if (logoImg) { ctx.drawImage(logoImg, x * scale, y * scale, w * scale, h * scale); }
+        trackY(y + h);
+      },
+      getTextWidth: function (str) { return ctx.measureText(String(str)).width / scale; },
+      splitTextToSize: function (str, maxW) {
+        var words = String(str).split(' ');
+        var lines = [], cur = '';
+        words.forEach(function (word) {
+          var test = cur ? cur + ' ' + word : word;
+          if (cur && ctx.measureText(test).width / scale > maxW) { lines.push(cur); cur = word; }
+          else { cur = test; }
+        });
+        if (cur) lines.push(cur);
+        return lines;
+      },
+      addPage: function () { /* single continuous image — no real page breaks */ },
+      _finish: function () {
+        var pad = 10, a4Hmm = 297;
+        var usedH = Math.max(a4Hmm, Math.min(ceilingHmm, usedMaxY + pad));
+        var out = document.createElement('canvas');
+        out.width = canvas.width;
+        out.height = Math.max(1, Math.round(usedH * scale));
+        out.getContext('2d').drawImage(canvas, 0, 0);
+        return out;
+      }
+    };
+    return shim;
+  }
+
+  function canvasToPngBlob(canvas) {
+    return new Promise(function (resolve) {
+      canvas.toBlob(function (blob) { resolve(blob); }, 'image/png');
+    });
+  }
+
+  async function buildMovimentacoesImageBlob(state) {
+    var logoImg = await preloadLogoImage();
+    var shim = createCanvasPdfShim(6, logoImg);
+    buildPdfContent(shim, state, true);
+    return canvasToPngBlob(shim._finish());
+  }
+
+  async function buildContasAPagarImageBlob(state) {
+    var logoImg = await preloadLogoImage();
+    var shim = createCanvasPdfShim(6, logoImg);
+    buildContasAPagarContent(shim, state, 100000, true);
+    return canvasToPngBlob(shim._finish());
   }
 
   async function getDownloadsCapability() {
@@ -938,13 +1089,15 @@
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
   }
-  async function saveOrDownload(filename, blob) {
+  async function saveOrDownload(filename, blob, label, feminine) {
+    label = label || 'PDF';
+    var suf = feminine ? 'a' : 'o';
     var downloads = await getDownloadsCapability();
     if (downloads) {
-      try { var result = await downloads.save({ filename: filename, data: blob }); return { ok: true, msg: result.status === 'saved' ? 'PDF salvo com sucesso.' : 'PDF enviado.' }; }
+      try { var result = await downloads.save({ filename: filename, data: blob }); return { ok: true, msg: result.status === 'saved' ? (label + ' salv' + suf + ' com sucesso.') : (label + ' enviad' + suf + '.') }; }
       catch (err) { if (err && err.code === 'declined') return { ok: false, cancelled: true }; }
     }
-    try { browserDownload(filename, blob); return { ok: true, msg: 'PDF baixado com sucesso.' }; }
+    try { browserDownload(filename, blob); return { ok: true, msg: label + ' baixad' + suf + ' com sucesso.' }; }
     catch (e) { return { ok: false, msg: 'Não foi possível gerar o download. Tente novamente ou use outro navegador.' }; }
   }
   function setStatus(msg, kind) {
@@ -960,6 +1113,34 @@
 
   // ================= Wiring =================
   function wireEvents() {
+    document.body.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return;
+      var row = e.target.closest && e.target.closest('.sub-row');
+      if (!row) return;
+      if (e.target.classList.contains('desc-input')) {
+        e.preventDefault();
+        var valueInput = row.querySelector('.value-input');
+        if (valueInput) valueInput.focus();
+        return;
+      }
+      if (!e.target.classList.contains('value-input')) return;
+      e.preventDefault();
+      var nextRow = row.nextElementSibling;
+      if (nextRow && nextRow.classList.contains('sub-row')) {
+        var nextDesc = nextRow.querySelector('.desc-input');
+        if (nextDesc) nextDesc.focus();
+        return;
+      }
+      var listContainer = row.parentElement;
+      if (!listContainer || !listContainer.id || listContainer.id.slice(-5) !== '-list') return;
+      var listId = listContainer.id.slice(0, -5);
+      addSubRow(listId);
+      recalc(); saveDraft();
+      var newRow = listContainer.lastElementChild;
+      var descInput = newRow && newRow.querySelector('.desc-input');
+      if (descInput) descInput.focus();
+    });
+
     document.body.addEventListener('click', function (e) {
       if (e.target.classList.contains('add-btn')) {
         addSubRow(e.target.getAttribute('data-list'));
@@ -1000,31 +1181,38 @@
         var boletosError = document.getElementById('boletos-error');
         if (boletosError) boletosError.textContent = '';
       }
-      if (e.target.matches('input, select')) { recalc(); saveDraft(); }
+      if (e.target.matches('input, select, textarea')) { recalc(); saveDraft(); }
     });
     document.body.addEventListener('change', function (e) {
       if (e.target.id === 'data-anterior' || e.target.id === 'data-hoje') updateDateTags();
-      if (e.target.matches('input, select')) { recalc(); saveDraft(); }
+      if (e.target.matches('input, select, textarea')) { recalc(); saveDraft(); }
     });
 
-    var clearConfirmTimeout = null;
-    document.getElementById('btn-clear').addEventListener('click', function () {
-      var btn = this;
-      if (!btn.classList.contains('confirm-pending')) {
-        btn.classList.add('confirm-pending');
-        btn.dataset.originalText = btn.textContent;
-        btn.textContent = 'Confirmar limpeza?';
-        clearConfirmTimeout = setTimeout(function () {
-          btn.classList.remove('confirm-pending');
-          btn.textContent = btn.dataset.originalText;
-        }, 4000);
-        return;
-      }
-      clearTimeout(clearConfirmTimeout);
-      btn.classList.remove('confirm-pending');
-      btn.textContent = btn.dataset.originalText;
+    function wireClearButton(btnId) {
+      var btn = document.getElementById(btnId);
+      if (!btn) return;
+      var timeoutId = null;
+      btn.addEventListener('click', function () {
+        if (!btn.classList.contains('confirm-pending')) {
+          btn.classList.add('confirm-pending');
+          btn.dataset.originalText = btn.textContent;
+          btn.textContent = 'Confirmar limpeza?';
+          timeoutId = setTimeout(function () {
+            btn.classList.remove('confirm-pending');
+            btn.textContent = btn.dataset.originalText;
+          }, 4000);
+          return;
+        }
+        clearTimeout(timeoutId);
+        btn.classList.remove('confirm-pending');
+        btn.textContent = btn.dataset.originalText;
+        performClear();
+      });
+    }
 
+    function performClear() {
       document.querySelectorAll('.box input[type="text"]').forEach(function (i) { i.value = ''; });
+      document.getElementById('obs_contas_pagar').value = '';
       document.querySelectorAll('.box .field-row').forEach(function (r) {
         r.style.display = '';
         var inp = r.querySelector('input'); if (inp) inp.disabled = false;
@@ -1041,23 +1229,27 @@
       updateDateTags(); recalc();
       try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
       setStatus('', '');
-    });
+    }
 
-    document.getElementById('btn-pdf-contas').addEventListener('click', async function () {
+    wireClearButton('btn-clear');
+    wireClearButton('btn-clear-step1');
+
+    document.getElementById('btn-img-contas').addEventListener('click', async function () {
       setStatus('', '');
       var state = getState();
       if (!state.loja || !state.dataHoje) {
-        setStatus('Selecione a loja e a data de hoje antes de baixar o PDF.', 'error');
+        setStatus('Selecione a loja e a data de hoje antes de baixar a imagem.', 'error');
         return;
       }
-      var doc = buildContasAPagarPdf(state);
-      if (!doc) {
-        setStatus('Não foi possível carregar o gerador de PDF. Recarregue a página e tente novamente.', 'error');
+      var blob;
+      try { blob = await buildContasAPagarImageBlob(state); }
+      catch (e) { blob = null; }
+      if (!blob) {
+        setStatus('Não foi possível gerar a imagem. Recarregue a página e tente novamente.', 'error');
         return;
       }
-      var blob = doc.output('blob');
-      var filename = 'contas_a_pagar_' + slugify(state.loja) + '_' + state.dataHoje + '.pdf';
-      var res = await saveOrDownload(filename, blob);
+      var filename = 'contas_a_pagar_' + slugify(state.loja) + '_' + state.dataHoje + '.png';
+      var res = await saveOrDownload(filename, blob, 'Imagem', true);
       setStatus(res.cancelled ? 'Download cancelado.' : (res.msg || ''), res.ok ? 'success' : 'error');
     });
 
@@ -1079,21 +1271,22 @@
       goToStep(1);
     });
 
-    document.getElementById('btn-pdf').addEventListener('click', async function () {
+    document.getElementById('btn-img').addEventListener('click', async function () {
       setStatus('', '');
       var state = getState();
       if (!state.loja || !state.dataAnterior) {
-        setStatus('Selecione a loja e a data das movimentações antes de gerar o PDF.', 'error');
+        setStatus('Selecione a loja e a data das movimentações antes de gerar a imagem.', 'error');
         return;
       }
-      var doc = buildPdf(state);
-      if (!doc) {
-        setStatus('Não foi possível carregar o gerador de PDF. Recarregue a página e tente novamente.', 'error');
+      var blob;
+      try { blob = await buildMovimentacoesImageBlob(state); }
+      catch (e) { blob = null; }
+      if (!blob) {
+        setStatus('Não foi possível gerar a imagem. Recarregue a página e tente novamente.', 'error');
         return;
       }
-      var blob = doc.output('blob');
-      var filename = 'relatorio_movimentacoes_' + slugify(state.loja) + '_' + state.dataAnterior + '.pdf';
-      var res = await saveOrDownload(filename, blob);
+      var filename = 'relatorio_movimentacoes_' + slugify(state.loja) + '_' + state.dataAnterior + '.png';
+      var res = await saveOrDownload(filename, blob, 'Imagem', true);
       setStatus(res.cancelled ? 'Download cancelado.' : (res.msg || ''), res.ok ? 'success' : 'error');
     });
   }
