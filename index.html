@@ -71,7 +71,7 @@
   }
   body.step1 header.top { margin-bottom: 28px; }
 
-  .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
   @media (max-width: 760px) { .columns { grid-template-columns: 1fr; } }
 
   .column-heading {
@@ -121,17 +121,21 @@
   }
 
   .readonly-row, .total-row {
-    display: flex; justify-content: space-between; align-items: center; padding: 6px 0; gap: 10px;
+    display: flex; justify-content: space-between; align-items: center; padding: 5px 0; gap: 10px;
   }
   .readonly-row label, .total-row label { margin: 0; font-size: 0.82rem; color: var(--text); font-weight: normal; }
-  .readonly-row span, .total-row span { font-weight: bold; white-space: nowrap; }
+  .readonly-row span, .total-row span { font-weight: bold; white-space: nowrap; font-size: 0.9rem; }
+  .total-row.grand span { font-size: 0.98rem; }
   .total-row.grand { border-top: 1px solid var(--border); margin-top: 6px; font-size: 0.95rem; }
   .box.theme-blue .total-row.grand span { color: var(--blue); }
   .box.theme-pink .total-row.grand span { color: var(--pink); }
   .negative-value { color: var(--wine) !important; }
-  #box-b-saldo-atual .total-row.grand label { color: var(--blue-light-text); }
+  .extra-row { padding: 2px 0; }
+  .total-row.grand + .extra-row { padding-top: 8px; }
+  .extra-row label, .extra-row span { color: var(--muted); font-weight: normal; font-size: 0.78rem; }
 
   .sublist { background: var(--bg); border-radius: 8px; padding: 9px; margin: 9px 0; }
+  .box-body > .sublist:first-child { margin-top: 0; }
   .sublist-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
   .sublist-header span { font-size: 0.76rem; font-weight: bold; color: var(--muted); text-transform: uppercase; }
   .add-btn {
@@ -145,10 +149,11 @@
   .box.theme-pink .sublist .add-btn:hover { background: var(--pink); color: #fff; }
   .sub-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
   .sub-row .desc-input { flex: 1; }
-  .sub-row .value-input { width: 100px; text-align: right; }
+  .sub-row .value-input { width: 135px; text-align: right; }
   .sub-row .remove-btn { border: none; background: transparent; color: var(--pink); font-size: 1.05rem; cursor: pointer; padding: 2px 6px; }
+  .sub-row .remove-btn:disabled { color: var(--pink); opacity: 0.35; cursor: not-allowed; }
 
-  .actions { display: flex; gap: 10px; margin: 18px 0 6px; flex-wrap: wrap; }
+  .actions { display: flex; gap: 10px; margin: 18px 0 6px; flex-wrap: wrap; justify-content: flex-end; }
   button.primary {
     background: var(--blue); color: #fff; border: none; border-radius: 8px; padding: 12px 20px;
     font-size: 0.92rem; font-weight: bold; cursor: pointer;
@@ -165,46 +170,172 @@
   #status-msg.error { color: var(--pink); }
   #status-msg.success { color: var(--blue); }
 
-  /* ---- Step 1 / Step 2 wizard ---- */
-  #actions-step2 { display: none; }
-  body.step2 #actions-step1 { display: none; }
-  body.step2 #actions-step2 { display: flex; }
+  /* ---- Step 1 / Step 2 / Step 3 wizard ---- */
+  body.step1 .columns,
+  body.step1 #saldo-geral-container,
+  body.step1 #import-log-container,
+  body.step1 #step3-container,
+  body.step1 #actions-step2,
+  body.step1 #actions-step3 { display: none; }
+
   body.step2 .intro-step1,
   body.step2 #step1-box-container,
-  body.step2 #step1-obs-container { display: none; }
-  body.step1 .columns,
-  body.step1 #saldo-geral-container { display: none; }
-  #step1-box-container { max-width: 640px; margin: 0 auto; }
-  #step1-box-container .box-header { font-size: 1.05rem; padding: 12px 16px; }
-  #step1-box-container .box-body { padding: 22px; }
-  #step1-box-container label { font-size: 0.85rem; }
+  body.step2 #step1-deposito-container,
+  body.step2 #step1-cofre-container,
+  body.step2 #step1-obs-container,
+  body.step2 #step3-container,
+  body.step2 #actions-step1,
+  body.step2 #actions-step3 { display: none; }
+  body.step2 #actions-step2 { display: flex; }
+  body.step2 #import-log-container { display: block; }
+
+  body.step3 .intro-step1,
+  body.step3 #step1-box-container,
+  body.step3 #step1-deposito-container,
+  body.step3 #step1-cofre-container,
+  body.step3 #step1-obs-container,
+  body.step3 .columns,
+  body.step3 #saldo-geral-container,
+  body.step3 #import-log-container,
+  body.step3 #actions-step1,
+  body.step3 #actions-step2 { display: none; }
+  body.step3 #step3-container { display: block; }
+  body.step3 #actions-step3 { display: flex; margin-top: 16px; }
+
+  #step1-box-container, #step1-deposito-container, #step1-cofre-container { max-width: 640px; margin: 0 auto; }
+  #step1-box-container .box-header, #step1-deposito-container .box-header, #step1-cofre-container .box-header { font-size: 1.05rem; padding: 12px 16px; }
+  #step1-box-container .box-body, #step1-deposito-container .box-body, #step1-cofre-container .box-body { padding: 22px; }
+  #step1-box-container label, #step1-deposito-container label, #step1-cofre-container label { font-size: 0.85rem; }
+  #step1-deposito-container { margin-bottom: 12px; }
   #step1-obs-container { max-width: 640px; margin: 0 auto; padding-bottom: 28px; }
-  #step1-obs-container .box-body { padding: 18px 22px; }
+  #step1-obs-container .box-header { font-size: 1.05rem; padding: 12px 16px; }
+  #step1-obs-container .box-body { padding: 22px; }
   .obs-textarea {
     width: 100%; min-height: 90px; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border);
     background: var(--input-bg); color: var(--text); font-size: 0.92rem; font-family: inherit; resize: vertical;
   }
   .obs-textarea:focus { outline: 2px solid var(--blue); outline-offset: 1px; }
 
-  #saldo-geral-container { display: flex; justify-content: center; }
-  .saldo-geral-box { margin-top: 4px; min-width: 40%; width: fit-content; border-color: var(--border); }
+  #step3-container { max-width: 900px; margin: 0 auto; }
+  .ofx-upload-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 6px; }
+  .ofx-bank-field { min-width: 150px; }
+  .ofx-file-field { flex: 1; min-width: 220px; }
+  .ofx-add-btn { white-space: nowrap; }
+  #step3-container .hint { font-size: 0.78rem; color: var(--muted); margin: 4px 0 10px; }
+  #ofx-status-msg { font-size: 0.82rem; min-height: 1.1em; margin-bottom: 6px; }
+  #ofx-status-msg.error { color: var(--wine); }
+  #ofx-status-msg.success { color: var(--blue); }
+
+  .ofx-table { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-top: 10px; }
+  .ofx-table-header, .ofx-txn-row {
+    display: grid; grid-template-columns: 84px 1fr 110px 270px; gap: 8px; align-items: center;
+    padding: 8px 10px; border-bottom: 1px solid var(--border);
+  }
+  .ofx-table-header { background: var(--bg); font-size: 0.74rem; font-weight: bold; color: var(--muted); text-transform: uppercase; }
+  .ofx-txn-row:last-child { border-bottom: none; }
+  .ofx-txn-date { font-size: 0.82rem; color: var(--muted); }
+  .ofx-txn-desc { font-size: 0.85rem; word-break: break-word; }
+  .ofx-txn-value { font-size: 0.85rem; font-weight: bold; text-align: right; }
+  .ofx-txn-value.ofx-positive { color: var(--positive); }
+  .ofx-txn-value.ofx-negative { color: var(--wine); }
+  .ofx-txn-dest { font-size: 0.82rem; padding: 6px 26px 6px 8px; text-overflow: ellipsis; }
+  .cat-input {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%23888'/></svg>");
+    background-repeat: no-repeat; background-position: right 9px center; cursor: text;
+  }
+  .cat-popup {
+    position: fixed; z-index: 1000; max-height: 250px; overflow-y: auto; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+  }
+  .cat-popup[hidden] { display: none; }
+  .cat-opt { padding: 7px 12px; font-size: 0.86rem; cursor: pointer; color: var(--text); }
+  .cat-opt.active, .cat-opt:hover { background: var(--blue-light); color: var(--blue-light-text); }
+  .cat-opt.selected { font-weight: bold; }
+  .cat-empty { padding: 9px 12px; font-size: 0.82rem; color: var(--muted); font-style: italic; }
+  .sublist-import-list:empty::before { content: "Preenchido pela importação de extrato"; color: var(--muted); font-size: 0.78rem; font-style: italic; }
+  .extra-row.bold label, .extra-row.bold span { font-weight: bold; }
+  .ofx-saldo-row {
+    display: grid; grid-template-columns: 1fr 190px 190px; gap: 8px; align-items: center;
+    padding: 9px 10px; background: var(--bg); border-bottom: 1px solid var(--border);
+  }
+  .ofx-saldo-row:last-child { border-bottom: none; border-top: 1px solid var(--border); }
+  .ofx-saldo-label { font-size: 0.85rem; font-weight: bold; }
+  .ofx-saldo-value-wrap { display: flex; align-items: center; gap: 6px; }
+  .ofx-saldo-value-wrap input { width: 100%; font-size: 1rem; font-weight: bold; padding: 8px 10px; text-align: right; }
+  .ofx-saldo-value-readonly { font-size: 1rem; font-weight: bold; text-align: right; }
+  .ofx-saldo-dest { font-size: 0.78rem; color: var(--muted); }
+  #ofx-date-warning { color: var(--wine); font-size: 0.85rem; font-weight: bold; margin-top: 8px; }
+  @media (max-width: 640px) {
+    .ofx-saldo-row { grid-template-columns: 1fr; gap: 3px; }
+    .ofx-saldo-label { grid-column: auto; }
+  }
+  @media (max-width: 640px) {
+    .ofx-table-header { display: none; }
+    .ofx-txn-row { grid-template-columns: 1fr; gap: 3px; }
+    .ofx-txn-value { text-align: left; }
+  }
+
+  .ofx-summary-title { font-size: 0.8rem; font-weight: bold; color: var(--muted); text-transform: uppercase; margin: 16px 0 8px; }
+  .ofx-summary-row {
+    display: flex; justify-content: space-between; font-size: 0.88rem; padding: 6px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  #saldo-geral-container { display: block; text-align: center; }
+  .saldo-geral-box { margin: 4px auto 0; max-width: 640px; width: 100%; border-color: var(--border); text-align: left; }
   .saldo-geral-box .box-header {
     background: var(--muted);
     font-size: 1rem; justify-content: center; text-align: center;
   }
   .saldo-geral-box.is-negative .box-header { background: var(--wine); }
   .saldo-geral-box.is-negative { border-color: var(--wine); }
-  .saldo-geral-box.is-negative .saldo-geral-value { color: var(--wine); }
+  .saldo-geral-box.is-negative .previsao-line-label,
+  .saldo-geral-box.is-negative .previsao-line-value,
+  .saldo-geral-box.is-negative .previsao-result-row { color: var(--wine); }
   .saldo-geral-box.is-positive .box-header { background: var(--positive); }
   .saldo-geral-box.is-positive { border-color: var(--positive); }
-  .saldo-geral-box.is-positive .saldo-geral-value { color: var(--positive); }
-  .saldo-geral-box .box-body { text-align: center; padding: 18px 24px; }
-  .saldo-geral-value { font-size: 1.7rem; font-weight: bold; color: var(--text); }
-  .saldo-geral-caption { font-size: 0.85rem; font-weight: bold; color: var(--muted); margin-top: 6px; }
+  .saldo-geral-box.is-positive .previsao-line-label,
+  .saldo-geral-box.is-positive .previsao-line-value,
+  .saldo-geral-box.is-positive .previsao-result-row { color: var(--positive); }
+  .saldo-geral-box .box-body { padding: 10px 12px 12px; }
+
+  .previsao-block { margin-bottom: 12px; }
+  .previsao-detail-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted); padding: 3px 0; }
+  .previsao-line {
+    display: flex; justify-content: space-between; align-items: center; font-size: 1.02rem; font-weight: bold;
+    text-transform: uppercase; padding-top: 6px; border-top: 1px dashed var(--border); margin-top: 4px; color: var(--text);
+  }
+  .previsao-line.noborder { border-top: none; margin-top: 0; padding-top: 3px; }
+  .previsao-items { margin: 6px 0 4px; }
+  .previsao-item-row { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text); padding: 2px 0; }
+  .previsao-result-row {
+    display: flex; justify-content: space-between; align-items: center; font-size: 1.15rem; font-weight: bold;
+    text-transform: uppercase; padding-top: 12px; margin-top: 12px; border-top: 2px solid var(--border); color: var(--text);
+  }
 
   .box-note { font-size: 0.72rem; color: var(--muted); margin-top: 10px; line-height: 1.4; }
 
   .field-error { color: var(--wine); font-size: 0.78rem; margin: -5px 0 10px; min-height: 1.1em; }
+
+  #import-log-container .box-header { justify-content: space-between; text-align: left; }
+  .collapse-toggle {
+    border: 1px solid rgba(255,255,255,0.6); background: transparent; color: #fff; border-radius: 5px;
+    width: 24px; height: 22px; font-size: 0.9rem; font-weight: bold; cursor: pointer; line-height: 1;
+  }
+  .import-log-table-wrap { overflow-x: auto; }
+  .import-log-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 0.82rem; }
+  .import-log-table th, .import-log-table td { padding: 5px 8px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .import-log-table th:nth-child(1), .import-log-table td:nth-child(1) { width: 26%; }
+  .import-log-table th:nth-child(2), .import-log-table td:nth-child(2) { width: 22%; }
+  .import-log-table th:nth-child(3), .import-log-table td:nth-child(3),
+  .import-log-table th:nth-child(4), .import-log-table td:nth-child(4) { width: 26%; }
+  .import-log-table th:first-child, .import-log-table td:first-child,
+  .import-log-table th:nth-child(2), .import-log-table td:nth-child(2) { text-align: left; }
+  .import-log-table thead th { font-size: 0.72rem; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .import-log-table tbody tr { border-bottom: 1px solid var(--border); }
+  .import-log-table tbody tr:last-child { border-bottom: none; }
+  .import-log-empty { color: var(--muted); font-style: italic; text-align: left !important; padding: 10px !important; }
+  .import-log-footer { display: flex; justify-content: flex-end; margin-top: 10px; }
 
   button.confirm-pending { background: var(--pink); color: #fff; border-color: var(--pink); }
 </style>
@@ -241,8 +372,10 @@
       </div>
     </header>
 
-    <p class="intro-step1">Preencha as saídas previstas de hoje para gerar o relatório de contas a pagar e continuar para o relatório completo.</p>
+    <p class="intro-step1">Preencha as saídas e depósitos previstos de hoje para gerar o relatório de contas a pagar e continuar para o relatório completo.</p>
+    <div id="step1-deposito-container"></div>
     <div id="step1-box-container"></div>
+    <div id="step1-cofre-container"></div>
 
     <div id="step1-obs-container">
       <div class="box theme-blue">
@@ -253,23 +386,79 @@
       </div>
     </div>
 
+    <div id="import-log-container">
+      <div class="box theme-blue">
+        <div class="box-header">
+          IMPORTAÇÃO DE EXTRATOS
+          <button type="button" id="btn-toggle-import-log" class="collapse-toggle" aria-label="Esconder/mostrar">−</button>
+        </div>
+        <div class="box-body" id="import-log-body">
+          <div class="import-log-table-wrap">
+            <table class="import-log-table">
+              <thead><tr><th>Data</th><th>Banco</th><th>Saldo inicial</th><th>Saldo final</th></tr></thead>
+              <tbody id="import-log-tbody"></tbody>
+            </table>
+          </div>
+          <div class="import-log-footer">
+            <button type="button" class="pdf-btn" id="btn-open-ofx-import">Importar extrato OFX</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="columns">
       <div id="col-bancarias"></div>
       <div id="col-cofre"></div>
     </div>
     <div id="saldo-geral-container"></div>
 
+    <div id="step3-container">
+      <div class="box theme-blue ofx-box">
+        <div class="box-header">IMPORTAR EXTRATO OFX</div>
+        <div class="box-body">
+          <div id="ofx-upload-area">
+            <div class="ofx-upload-row">
+              <div class="field ofx-bank-field">
+                <label for="ofx-bank-select">Banco</label>
+                <select id="ofx-bank-select">
+                  <option value="sicredi">Sicredi</option>
+                  <option value="itau">Itaú</option>
+                  <option value="bradesco">Bradesco</option>
+                  <option value="banestes">Banestes</option>
+                  <option value="sicoob">Sicoob</option>
+                </select>
+              </div>
+              <div class="field ofx-file-field">
+                <label for="ofx-file-input">Arquivo .ofx</label>
+                <input type="file" id="ofx-file-input" accept=".ofx,.qfx,text/plain">
+              </div>
+              <button type="button" class="secondary ofx-add-btn" id="btn-ofx-add-file">Processar extrato</button>
+            </div>
+            <div class="hint">Selecione o banco e o arquivo exportado do internet banking. Um extrato por vez.</div>
+          </div>
+          <p id="ofx-status-msg"></p>
+
+          <div id="ofx-transactions-area"></div>
+          <div id="ofx-summary-area"></div>
+        </div>
+      </div>
+      <div class="actions" id="actions-step3">
+        <button type="button" class="secondary" id="btn-ofx-cancel">Cancelar</button>
+        <button type="button" class="primary" id="btn-ofx-apply" disabled>Adicionar ao formulário</button>
+      </div>
+    </div>
+
     <div class="actions" id="actions-step1">
+      <button type="button" class="secondary" id="btn-clear-step1">Limpar formulário</button>
       <button type="button" class="pdf-btn" id="btn-img-contas">Baixar imagem</button>
       <button type="button" class="primary" id="btn-continuar">Continuar</button>
-      <button type="button" class="secondary" id="btn-clear-step1">Limpar formulário</button>
     </div>
     <div class="actions" id="actions-step2">
       <button type="button" class="secondary" id="btn-voltar">← Voltar</button>
-      <button type="button" class="pdf-btn" id="btn-img">Baixar imagem</button>
       <button type="button" class="secondary" id="btn-clear">Limpar formulário</button>
+      <button type="button" class="pdf-btn" id="btn-img">Baixar imagem</button>
     </div>
     <p id="status-msg"></p>
+    <div id="cat-popup" class="cat-popup" hidden></div>
   </div>
 
 <script>
@@ -277,38 +466,65 @@
   "use strict";
 
   // ================= Config: describes every box on the page =================
+  // Categorias da coluna bancária. Campos "fixed" sempre aparecem; os demais só
+  // aparecem (formulário e relatório) quando a importação de extrato os preenche.
+  var BANK_ENTRADA_CATS = [
+    { id: 'b_e_antecipacao_cielo', label: 'Antecipação da Cielo' },
+    { id: 'b_e_cielo', label: 'Recebíveis da Cielo' },
+    { id: 'b_e_rede', label: 'Recebíveis da Rede' },
+    { id: 'b_e_bolt', label: 'Recebíveis da Bolt' },
+    { id: 'b_e_alimentacao', label: 'Recebíveis de alimentação' },
+    { id: 'b_e_cashback', label: 'Cashback do Cartão de Todos' },
+    { id: 'b_e_pix', label: 'Vendas no pix' },
+    { id: 'b_e_repasse', label: 'Repasse de fornecedor' },
+    { id: 'b_depositos', label: 'Depósitos (do cofre)', fixed: true },
+    { id: 'b_transferencias_entrada', label: 'Transferências entre contas', catLabel: 'Transferência entre contas', fixed: true }
+  ];
+  var BANK_SAIDA_CATS = [
+    { id: 'b_boletos_dda_pago', label: 'Boletos (DDA)', fixed: true },
+    { id: 'b_s_aluguel', label: 'Aluguel' },
+    { id: 'b_s_agua', label: 'Água' },
+    { id: 'b_s_energia', label: 'Energia' },
+    { id: 'b_s_internet', label: 'Internet e telefonia' },
+    { id: 'b_s_impostos', label: 'Impostos' },
+    { id: 'b_s_salarios', label: 'Salários' },
+    { id: 'b_s_ferias', label: 'Férias de funcionários' },
+    { id: 'b_s_rescisao', label: 'Rescisão de funcionários' },
+    { id: 'b_s_marketing', label: 'Marketing' },
+    { id: 'b_s_manutencao', label: 'Manutenção da loja' },
+    { id: 'b_s_seguro_veiculos', label: 'Seguro de veículos' },
+    { id: 'b_s_seguro_vida', label: 'Seguro de vida' },
+    { id: 'b_s_plano_saude', label: 'Plano de saúde' },
+    { id: 'b_s_abastecimento', label: 'Abastecimento' },
+    { id: 'b_s_juros_iof', label: 'Juros e IOF' },
+    { id: 'b_s_taxas_tarifas', label: 'Taxas e tarifas bancárias' },
+    { id: 'b_s_cartao_empresarial', label: 'Cartão empresarial' },
+    { id: 'b_s_devolucoes', label: 'Devoluções de vendas' },
+    { id: 'b_transferencias_saida', label: 'Transferências entre contas', catLabel: 'Transferência entre contas', fixed: true }
+  ];
+  function catsToFields(cats) {
+    return cats.map(function (c) { return { id: c.id, label: c.label, locked: true, dynamic: !c.fixed }; });
+  }
+
   var CONFIG = {
     bancarias: {
       theme: 'blue',
       heading: 'Movimentações Bancárias',
       boxes: [
         {
-          id: 'b-saldo-inicial', type: 'saldoInicial', title: 'SALDO ANTERIOR', dateTag: 'anterior',
+          id: 'b-saldo-inicial', type: 'saldoInicial', title: 'SALDO ANTERIOR', dateTag: 'anterior', locked: true,
           fieldId: 'b_saldo_inicial', fieldLabel: 'Saldo anterior'
         },
         {
           id: 'b-entradas', type: 'normal', title: 'ENTRADAS', dateTag: 'anterior',
-          fields: [
-            { id: 'b_sicredi', label: 'Cartões Sicredi', hideable: true },
-            { id: 'b_itau', label: 'Cartões Itaú', hideable: true },
-            { id: 'b_bradesco', label: 'Cartões Bradesco', hideable: true },
-            { id: 'b_banestes', label: 'Cartões Banestes', hideable: true },
-            { id: 'b_sicoob', label: 'Cartões Sicoob', hideable: true },
-            { id: 'b_pix', label: 'Pix', hideable: true },
-            { id: 'b_depositos', label: 'Depósitos (do cofre)', linkedFrom: 'c_depositos_bancarios' }
-          ],
-          restoreLink: true,
-          sublist: { id: 'b_outras_entradas', title: 'Outras entradas' },
+          fields: catsToFields(BANK_ENTRADA_CATS),
+          sublist: { id: 'b_outras_entradas', title: 'Outras entradas', importOnly: true },
           totalId: 'b_total_entradas', totalLabel: 'Total de entradas bancárias'
         },
         {
           id: 'b-saidas', type: 'normal', title: 'SAÍDAS', dateTag: 'anterior',
-          fields: [
-            { id: 'b_boletos_dda_pago', label: 'Boletos (DDA)' },
-            { id: 'b_estornos_pix', label: 'Devoluções de Pix', hideable: true }
-          ],
-          restoreLink: true,
-          sublist: { id: 'b_outras_saidas', title: 'Outras saídas' },
+          fields: catsToFields(BANK_SAIDA_CATS),
+          sublist: { id: 'b_outras_saidas', title: 'Outras saídas', importOnly: true },
           totalId: 'b_total_saidas', totalLabel: 'Total de saídas bancárias'
         },
         {
@@ -339,7 +555,7 @@
         {
           id: 'c-saidas', type: 'normal', title: 'SAÍDAS', dateTag: 'anterior',
           fields: [
-            { id: 'c_depositos_bancarios', label: 'Depósitos bancários' }
+            { id: 'c_depositos_bancarios', label: 'Depósitos bancários', linkedFrom: 'b_depositos' }
           ],
           sublist: { id: 'c_outras_saidas', title: 'Outras saídas' },
           totalId: 'c_total_saidas', totalLabel: 'Total de saídas em dinheiro'
@@ -355,7 +571,12 @@
           saldoInicialId: 'c_saldo_inicial',
           entradasRef: 'c_total_entradas', entradasLabel: 'Entradas em dinheiro',
           saidasRef: 'c_total_saidas', saidasLabel: 'Saídas em dinheiro',
-          totalId: 'c_saldo_atual', totalLabel: 'Saldo atual do cofre'
+          totalId: 'c_saldo_atual', totalLabel: 'Saldo atual do cofre',
+          extras: [
+            { label: 'Saídas previstas do cofre', id: 'c_total_saidas_previstas', sign: '-' },
+            { label: 'Depósitos previstos', id: 'b_deposito_previsto_total', sign: '-' },
+            { label: 'Saldo previsto no cofre', id: 'c_saldo_previsto', sign: 'dyn', bold: true }
+          ]
         }
       ]
     }
@@ -364,7 +585,7 @@
   // Fica fora das colunas: só aparece na primeira tela (passo 1) e alimenta o
   // PDF "Relatório de contas a pagar". Não faz parte do relatório de 2 colunas.
   var STEP1_BOX = {
-    id: 'b-saidas-previstas', type: 'normal', title: 'SAÍDAS PREVISTAS', dateTag: 'hoje', badge: true, light: true,
+    id: 'b-saidas-previstas', type: 'normal', title: 'SAÍDAS PREVISTAS DO BANCO', dateTag: 'hoje', badge: true,
     fields: [
       { id: 'b_boletos_dda', label: 'Boletos (DDA)' }
     ],
@@ -372,9 +593,25 @@
     totalId: 'b_total_saidas_previstas', totalLabel: 'Total de saídas previstas'
   };
 
-  var ALL_BOXES = CONFIG.bancarias.boxes.concat(CONFIG.cofre.boxes).concat([STEP1_BOX]);
+  var STEP1_COFRE_BOX = {
+    id: 'c-saidas-previstas', type: 'normal', title: 'SAÍDAS PREVISTAS DO COFRE', dateTag: 'hoje', badge: true,
+    fields: [],
+    sublist: { id: 'c_outros_pag_prev', title: 'Outros pagamentos' },
+    totalId: 'c_total_saidas_previstas', totalLabel: 'Total de saídas previstas'
+  };
+
+  var DEPOSITO_PREVISTO_BOX = {
+    id: 'b-deposito-previsto', type: 'normal', title: 'DEPÓSITOS PREVISTOS', dateTag: 'hoje', badge: true,
+    fields: [
+      { id: 'b_deposito_previsto', label: 'Depósito previsto' }
+    ],
+    totalId: 'b_deposito_previsto_total', totalLabel: 'Total de depósitos previstos'
+  };
+
+  var ALL_BOXES = CONFIG.bancarias.boxes.concat(CONFIG.cofre.boxes).concat([STEP1_BOX, STEP1_COFRE_BOX, DEPOSITO_PREVISTO_BOX]);
   var ALL_SUBLIST_IDS = [];
   ALL_BOXES.forEach(function (b) { if (b.sublist) ALL_SUBLIST_IDS.push(b.sublist.id); });
+  var IMPORT_ONLY_SUBLISTS = ALL_BOXES.filter(function (b) { return b.sublist && b.sublist.importOnly; }).map(function (b) { return b.sublist.id; });
   var SALDO_INICIAL_IDS = ALL_BOXES.filter(function (b) { return b.type === 'saldoInicial'; }).map(function (b) { return b.fieldId; });
 
   // ================= Helpers =================
@@ -450,17 +687,19 @@
   function fieldRowHTML(f) {
     var rowId = f.id + '-row';
     var hideBtn = f.hideable ? '<button type="button" class="hide-btn" data-target="' + rowId + '" title="Ocultar campo">\u00D7</button>' : '';
-    var readonlyAttr = f.linkedFrom ? ' readonly' : '';
-    return '<div class="field-row" id="' + rowId + '">' +
+    var readonlyAttr = (f.linkedFrom || f.locked) ? ' readonly' : '';
+    var lockTitle = f.locked ? ' title="Preenchido automaticamente pela importação de extrato"' : '';
+    var rowStyle = f.dynamic ? ' style="display:none"' : '';
+    return '<div class="field-row" id="' + rowId + '"' + rowStyle + '>' +
       '<label for="' + f.id + '">' + escapeHtml(f.label) + '</label>' +
-      '<div class="field-input-wrap"><input type="text" inputmode="decimal" class="money-input" id="' + f.id + '" placeholder="0,00"' + readonlyAttr + '>' + hideBtn + '</div>' +
+      '<div class="field-input-wrap"><input type="text" inputmode="decimal" class="money-input" id="' + f.id + '" placeholder="0,00"' + readonlyAttr + lockTitle + '>' + hideBtn + '</div>' +
       '</div>';
   }
   function sublistHTML(sl) {
+    var addBtn = sl.importOnly ? '' : '<button type="button" class="add-btn" data-list="' + sl.id + '">+ item</button>';
     return '<div class="sublist">' +
-      '<div class="sublist-header"><span>' + escapeHtml(sl.title) + '</span>' +
-      '<button type="button" class="add-btn" data-list="' + sl.id + '">+ item</button></div>' +
-      '<div id="' + sl.id + '-list"></div>' +
+      '<div class="sublist-header"><span>' + escapeHtml(sl.title) + '</span>' + addBtn + '</div>' +
+      '<div id="' + sl.id + '-list"' + (sl.importOnly ? ' class="sublist-import-list"' : '') + '></div>' +
       '</div>';
   }
   function boxHTML(box, theme) {
@@ -472,18 +711,22 @@
     var body = '';
     if (box.restoreLink) body += '<a href="#" class="restore-link">Mostrar campos ocultos</a>';
     if (box.type === 'saldoInicial') {
-      var toggleDisabled = box.signToggle === false;
+      var toggleDisabled = box.signToggle === false || box.locked;
+      var lockedAttr = box.locked ? ' readonly title="Preenchido automaticamente pela importação de extrato"' : '';
       body += '<div class="field-row" id="' + box.fieldId + '-row">' +
         '<label for="' + box.fieldId + '">' + escapeHtml(box.fieldLabel) + '</label>' +
         '<div class="field-input-wrap">' +
-        '<button type="button" class="sign-toggle"' + (toggleDisabled ? ' disabled title="Este campo não aceita valor negativo"' : '') + ' data-target="' + box.fieldId + '">+</button>' +
-        '<input type="text" inputmode="decimal" class="money-input" id="' + box.fieldId + '" placeholder="0,00">' +
+        '<button type="button" class="sign-toggle"' + (toggleDisabled ? ' disabled' : '') + (box.signToggle === false ? ' title="Este campo não aceita valor negativo"' : '') + ' data-target="' + box.fieldId + '">+</button>' +
+        '<input type="text" inputmode="decimal" class="money-input" id="' + box.fieldId + '" placeholder="0,00"' + lockedAttr + '>' +
         '</div></div>';
     } else if (box.type === 'saldo') {
       body += '<div class="readonly-row"><label>Saldo anterior</label><span id="' + box.saldoInicialId + '-echo">R$ 0,00</span></div>';
       body += '<div class="readonly-row"><label>' + box.entradasLabel + '</label><span id="' + box.entradasRef + '-echo">R$ 0,00</span></div>';
       body += '<div class="readonly-row"><label>' + box.saidasLabel + '</label><span id="' + box.saidasRef + '-echo">R$ 0,00</span></div>';
       body += '<div class="total-row grand"><label>' + box.totalLabel + '</label><span id="' + box.totalId + '">R$ 0,00</span></div>';
+      (box.extras || []).forEach(function (ex) {
+        body += '<div class="readonly-row extra-row' + (ex.bold ? ' bold' : '') + '"><label>' + ex.label + '</label><span id="' + ex.id + '-echo">R$ 0,00</span></div>';
+      });
     } else if (box.type === 'previsto') {
       body += '<div class="readonly-row"><label>' + box.baseLabel + '</label><span id="' + box.baseRef + '-echo">R$ 0,00</span></div>';
       body += '<div class="readonly-row"><label>' + box.subLabel + '</label><span id="' + box.subRef + '-echo">R$ 0,00</span></div>';
@@ -507,33 +750,52 @@
   }
   function renderStep1Box() {
     document.getElementById('step1-box-container').innerHTML = boxHTML(STEP1_BOX, 'blue');
-    var row = document.getElementById('b_boletos_dda-row');
-    if (row) row.insertAdjacentHTML('afterend', '<div class="field-error" id="boletos-error"></div>');
+    document.getElementById('step1-cofre-container').innerHTML = boxHTML(STEP1_COFRE_BOX, 'pink');
+    document.getElementById('step1-deposito-container').innerHTML = boxHTML(DEPOSITO_PREVISTO_BOX, 'blue');
   }
-  function renderSaldoGeral() {
-    var html = '<div class="box saldo-geral-box">' +
-      '<div class="box-header">SALDO TOTAL <span class="date-tag date-anterior-tag">(--/--/----)</span></div>' +
+  function renderSaldoGeral(s) {
+    var geralNeg = s.totals.resultado_dia < 0;
+    var html = '<div class="box-header">PREVISÃO DO DIA <span class="date-tag date-hoje-tag">(--/--/----)</span></div>' +
       '<div class="box-body">' +
-      '<div class="saldo-geral-value" id="saldo_geral">R$ 0,00</div>' +
-      '<div class="saldo-geral-caption">Saldo do cofre + Saldo das contas bancárias</div>' +
-      '</div></div>';
-    document.getElementById('saldo-geral-container').innerHTML = html;
+      '<div class="previsao-block">' +
+      '<div class="previsao-detail-row"><span>Saldo atual das contas</span><span>' + dynamicSignedFmt(s.totals.b_saldo_atual) + '</span></div>' +
+      '<div class="previsao-detail-row"><span>Saldo atual do cofre</span><span>' + dynamicSignedFmt(s.totals.c_saldo_atual) + '</span></div>' +
+      '<div class="previsao-line"><span class="previsao-line-label">SALDO TOTAL</span><span class="previsao-line-value">' + fmt(s.totals.saldo_geral) + '</span></div>' +
+      '</div>' +
+      '<div class="previsao-block">' +
+      '<div class="previsao-line noborder"><span class="previsao-line-label">SAÍDAS PREVISTAS</span><span class="previsao-line-value">' + fmt(s.totals.saidas_previstas_total) + '</span></div>' +
+      '</div>' +
+      '<div class="previsao-result-row"><span>RESULTADO</span><span>' + dynamicSignedFmt(s.totals.resultado_dia) + '</span></div>' +
+      '</div>';
+    var box = document.querySelector('#saldo-geral-container .saldo-geral-box');
+    if (!box) {
+      document.getElementById('saldo-geral-container').innerHTML = '<div class="box saldo-geral-box"></div>';
+      box = document.querySelector('#saldo-geral-container .saldo-geral-box');
+    }
+    box.className = 'box saldo-geral-box ' + (geralNeg ? 'is-negative' : 'is-positive');
+    box.innerHTML = html;
+    updateDateTags();
   }
 
   // ================= Dynamic sub-lists =================
-  function addSubRow(listId, desc, val) {
+  function addSubRow(listId, desc, val, locked) {
     var list = document.getElementById(listId + '-list');
+    var importOnly = IMPORT_ONLY_SUBLISTS.indexOf(listId) !== -1;
+    if (importOnly) locked = true;
     var row = document.createElement('div');
     row.className = 'sub-row';
+    var lockedAttr = locked ? ' readonly title="Preenchido automaticamente pela importação de extrato"' : '';
     row.innerHTML =
       '<input type="text" class="desc-input" placeholder="Descrição">' +
-      '<input type="text" inputmode="decimal" class="value-input money-input" placeholder="0,00">' +
-      '<button type="button" class="remove-btn" aria-label="Remover">\u00D7</button>';
+      '<input type="text" inputmode="decimal" class="value-input money-input" placeholder="0,00"' + lockedAttr + '>' +
+      (importOnly ? '' : '<button type="button" class="remove-btn" aria-label="Remover">\u00D7</button>');
     row.querySelector('.desc-input').value = desc || '';
     var valEl = row.querySelector('.value-input');
     if (val) valEl.value = formatMasked(val);
-    attachMoneyMask(valEl);
-    row.querySelector('.remove-btn').addEventListener('click', function () { row.remove(); recalc(); saveDraft(); });
+    if (locked) { row.dataset.locked = '1'; row.classList.add('sub-row-locked'); }
+    else { attachMoneyMask(valEl); }
+    var removeBtn = row.querySelector('.remove-btn');
+    if (removeBtn) removeBtn.addEventListener('click', function () { row.remove(); recalc(); saveDraft(); });
     row.querySelectorAll('input').forEach(function (inp) {
       inp.addEventListener('input', function () { recalc(); saveDraft(); });
     });
@@ -543,7 +805,11 @@
     var rows = document.querySelectorAll('#' + listId + '-list .sub-row');
     var out = [];
     rows.forEach(function (r) {
-      out.push({ desc: r.querySelector('.desc-input').value.trim(), val: parseBr(r.querySelector('.value-input').value) });
+      out.push({
+        desc: r.querySelector('.desc-input').value.trim(),
+        val: parseBr(r.querySelector('.value-input').value),
+        locked: r.dataset.locked === '1'
+      });
     });
     return out;
   }
@@ -590,11 +856,16 @@
     });
 
     var totals = {};
-    totals.b_total_entradas = values.b_sicredi + values.b_itau + values.b_bradesco + values.b_banestes +
-      values.b_sicoob + values.b_pix + values.b_depositos + sublists.b_outras_entradas.subtotal;
-    totals.b_total_saidas = values.b_boletos_dda_pago + values.b_estornos_pix + sublists.b_outras_saidas.subtotal;
+    function sumBoxFields(boxId) {
+      var b = ALL_BOXES.filter(function (x) { return x.id === boxId; })[0];
+      return (b.fields || []).reduce(function (acc, f) { return acc + (values[f.id] || 0); }, 0);
+    }
+    totals.b_total_entradas = sumBoxFields('b-entradas') + sublists.b_outras_entradas.subtotal;
+    totals.b_total_saidas = sumBoxFields('b-saidas') + sublists.b_outras_saidas.subtotal;
     totals.b_saldo_atual = values.b_saldo_inicial + totals.b_total_entradas - totals.b_total_saidas;
     totals.b_total_saidas_previstas = values.b_boletos_dda + sublists.b_outros_pag_prev.subtotal;
+    totals.c_total_saidas_previstas = sublists.c_outros_pag_prev.subtotal;
+    totals.saidas_previstas_total = totals.b_total_saidas_previstas + totals.c_total_saidas_previstas;
 
     totals.c_total_entradas = values.c_sangrias + sublists.c_outras_entradas.subtotal;
     totals.c_total_saidas = values.c_depositos_bancarios + sublists.c_outras_saidas.subtotal;
@@ -602,6 +873,9 @@
 
     totals.despesas_total = sublists.despesas_adicionais.subtotal;
     totals.saldo_geral = totals.b_saldo_atual + totals.c_saldo_atual;
+    totals.b_deposito_previsto_total = values.b_deposito_previsto;
+    totals.c_saldo_previsto = totals.c_saldo_atual - totals.c_total_saidas_previstas - values.b_deposito_previsto;
+    totals.resultado_dia = totals.saldo_geral - totals.b_total_saidas_previstas - totals.c_total_saidas_previstas;
 
     return {
       loja: document.getElementById('loja').value,
@@ -632,6 +906,10 @@
           var linkedEl = document.getElementById(f.id);
           if (linkedEl) linkedEl.value = formatMasked(s.values[f.id]);
         }
+        if (f.dynamic) {
+          var dynRow = document.getElementById(f.id + '-row');
+          if (dynRow) dynRow.style.display = s.values[f.id] ? '' : 'none';
+        }
       });
       if (box.type === 'saldo') {
         var siEl = document.getElementById(box.saldoInicialId + '-echo');
@@ -640,23 +918,16 @@
         applyNegative(siEl, siVal < 0);
         document.getElementById(box.entradasRef + '-echo').textContent = signedFmt('+', s.totals[box.entradasRef]);
         document.getElementById(box.saidasRef + '-echo').textContent = signedFmt('-', s.totals[box.saidasRef]);
+        (box.extras || []).forEach(function (ex) {
+          document.getElementById(ex.id + '-echo').textContent = ex.sign === '-' ? signedFmt('-', s.totals[ex.id]) : dynamicSignedFmt(s.totals[ex.id]);
+        });
       }
       if (box.type === 'previsto') {
         document.getElementById(box.baseRef + '-echo').textContent = signedFmt('+', s.totals[box.baseRef]);
-        document.getElementById(box.subRef + '-echo').textContent = signedFmt('-', s.totals[box.subRef]);
+        document.getElementById(box.subRef + '-echo').textContent = signedFmt(box.subSign || '-', s.totals[box.subRef]);
       }
     });
-    var saldoGeralEl = document.getElementById('saldo_geral');
-    if (saldoGeralEl) {
-      var geralNeg = s.totals.saldo_geral < 0;
-      saldoGeralEl.textContent = dynamicSignedFmt(s.totals.saldo_geral);
-      saldoGeralEl.style.color = geralNeg ? '#a4161a' : '#29bf12';
-      var sgBox = document.querySelector('.saldo-geral-box');
-      if (sgBox) {
-        sgBox.classList.toggle('is-negative', geralNeg);
-        sgBox.classList.toggle('is-positive', !geralNeg);
-      }
-    }
+    renderSaldoGeral(s);
     updateRestoreLinks();
   }
 
@@ -672,11 +943,11 @@
   }
 
   // ================= Draft persistence (per-viewer convenience) =================
-  var DRAFT_KEY = 'relatorio-movimentacoes-draft-v2';
+  var DRAFT_KEY = 'relatorio-movimentacoes-draft-v3';
   function saveDraft() {
     try {
       var s = getState();
-      var draft = { loja: s.loja, dataAnterior: s.dataAnterior, dataHoje: s.dataHoje, obsContasPagar: s.obsContasPagar, values: {}, sublists: {}, hidden: Object.keys(s.hidden) };
+      var draft = { loja: s.loja, dataAnterior: s.dataAnterior, dataHoje: s.dataHoje, obsContasPagar: s.obsContasPagar, values: {}, sublists: {}, hidden: Object.keys(s.hidden), ofxImportLog: ofxImportLog };
       Object.keys(s.values).forEach(function (k) { draft.values[k] = s.values[k]; });
       ALL_SUBLIST_IDS.forEach(function (id) { draft.sublists[id] = s.sublists[id].items; });
       localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
@@ -691,12 +962,13 @@
       if (d.dataAnterior) document.getElementById('data-anterior').value = d.dataAnterior;
       if (d.dataHoje) document.getElementById('data-hoje').value = d.dataHoje;
       if (d.obsContasPagar) document.getElementById('obs_contas_pagar').value = d.obsContasPagar;
+      if (d.ofxImportLog) ofxImportLog = d.ofxImportLog;
       Object.keys(d.values || {}).forEach(function (k) {
         var el = document.getElementById(k);
         if (el && d.values[k]) el.value = formatMasked(d.values[k]);
       });
       ALL_SUBLIST_IDS.forEach(function (id) {
-        (d.sublists && d.sublists[id] || []).forEach(function (it) { addSubRow(id, it.desc, it.val); });
+        (d.sublists && d.sublists[id] || []).forEach(function (it) { addSubRow(id, it.desc, it.val, it.locked); });
       });
       (d.hidden || []).forEach(function (fid) {
         var row = document.getElementById(fid + '-row');
@@ -738,33 +1010,82 @@
     var infoLine = 'Data das movimentações: ' + (formatDateBr(state.dataAnterior) || '-');
     doc.text(infoLine, marginX, afterHeaderY);
 
-    var colW = (210 - marginX * 2 - 6) / 2;
-    var xLeft = marginX, xRight = marginX + colW + 6;
+    var colW = (210 - marginX * 2 - 9) / 2;
+    var xLeft = marginX, xRight = marginX + colW + 9;
     var startY = afterHeaderY + 5.5;
     var yLeft = drawColumn(doc, xLeft, colW, startY, CONFIG.bancarias, state, 'blue');
     var yRight = drawColumn(doc, xRight, colW, startY, CONFIG.cofre, state, 'pink');
-    var yGeral = Math.max(yLeft, yRight) + 4;
+    var yGeral = yRight;
 
-    var fullW = colW * 2 + 6;
-    var bandW = fullW * 0.4;
-    var xGeral = xLeft + (fullW - bandW) / 2;
-    var bandH = 22;
-    var geralNegative = state.totals.saldo_geral < 0;
+    var fullW = colW * 2 + 9;
+    var bandW = colW;
+    var xGeral = xRight;
+    var geralNegative = state.totals.resultado_dia < 0;
     var geralColor = geralNegative ? PALETTE.wine : PALETTE.positive;
-    doc.setFillColor(geralColor[0], geralColor[1], geralColor[2]);
-    doc.rect(xGeral, yGeral, bandW, 6, 'F');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(255, 255, 255);
-    doc.text('SALDO TOTAL  (' + (formatDateBr(state.dataAnterior) || '--/--/----') + ')', xGeral + bandW / 2, yGeral + 4.2, { align: 'center' });
-    doc.setDrawColor(geralColor[0], geralColor[1], geralColor[2]);
-    doc.rect(xGeral, yGeral, bandW, bandH);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(geralColor[0], geralColor[1], geralColor[2]);
-    doc.text(dynamicSignedFmt(state.totals.saldo_geral), xGeral + bandW / 2, yGeral + 13, { align: 'center' });
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(90, 90, 90);
-    doc.text('Saldo do cofre + Saldo das contas bancárias', xGeral + bandW / 2, yGeral + 19, { align: 'center' });
+    var padGeral = 2.5;
+    var contentW = bandW - padGeral * 2;
+    var contentX = xGeral + padGeral;
+    var centerX = xGeral + bandW / 2;
 
-    var footerY = fitFooterToContent ? (yGeral + bandH + 7) : 289;
+    var ops = [];
+    function op(h, fn) { ops.push({ h: h, fn: fn }); }
+    function detailOp(label, val, h) {
+      op(h || 4.8, function (y) {
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(90, 90, 90);
+        doc.text(label, contentX, y);
+        doc.text(val, contentX + contentW, y, { align: 'right' });
+      });
+    }
+    function boldOp(label, val, h) {
+      op(h, function (y) {
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5); doc.setTextColor(geralColor[0], geralColor[1], geralColor[2]);
+        doc.text(label, contentX, y);
+        doc.text(val, contentX + contentW, y, { align: 'right' });
+      });
+    }
+    detailOp('Saldo atual das contas', dynamicSignedFmt(state.totals.b_saldo_atual));
+    detailOp('Saldo atual do cofre', dynamicSignedFmt(state.totals.c_saldo_atual), 3.4);
+    op(5.6, function (y) {
+      doc.setDrawColor(210, 210, 210); doc.setLineWidth(0.25);
+      if (doc.setLineDash) doc.setLineDash([1, 1]);
+      doc.line(contentX, y, contentX + contentW, y);
+      if (doc.setLineDash) doc.setLineDash([]);
+    });
+    boldOp('SALDO TOTAL', fmt(state.totals.saldo_geral), 7);
+    boldOp('SAÍDAS PREVISTAS', fmt(state.totals.saidas_previstas_total), 4.5);
+    op(7, function (y) {
+      doc.setDrawColor(geralColor[0], geralColor[1], geralColor[2]); doc.setLineWidth(0.5);
+      doc.line(contentX, y, contentX + contentW, y);
+    });
+    op(0, function (y) {
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(geralColor[0], geralColor[1], geralColor[2]);
+      doc.text('RESULTADO', contentX, y);
+      doc.text(dynamicSignedFmt(state.totals.resultado_dia), contentX + contentW, y, { align: 'right' });
+    });
+
+    var headerH = 6, topPad = 4.5, bottomPad = 3;
+    var contentH = ops.reduce(function (sum, o) { return sum + o.h; }, 0);
+    var bandH = headerH + topPad + contentH + bottomPad;
+
+    doc.setFillColor(geralColor[0], geralColor[1], geralColor[2]);
+    doc.rect(xGeral, yGeral, bandW, headerH, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(255, 255, 255);
+    doc.text('PREVISÃO DO DIA  (' + (formatDateBr(state.dataHoje) || '--/--/----') + ')', centerX, yGeral + 4.2, { align: 'center' });
+    doc.setDrawColor(geralColor[0], geralColor[1], geralColor[2]); doc.setLineWidth(0.4);
+    doc.rect(xGeral, yGeral, bandW, bandH);
+
+    var oy = yGeral + headerH + topPad;
+    ops.forEach(function (o) { o.fn(oy); oy += o.h; });
+
+    var footerY = fitFooterToContent ? (Math.max(yLeft, yGeral + bandH) + 7) : 289;
     doc.setFont('helvetica', 'italic'); doc.setFontSize(7); doc.setTextColor(150, 150, 150);
     doc.text('Gerado em ' + new Date().toLocaleString('pt-BR'), marginX, footerY);
+    var bankNames = ofxImportLog.map(function (e) { return e.bank; }).filter(function (v, i, a) { return a.indexOf(v) === i; });
+    if (bankNames.length) {
+      var bankList = bankNames.length === 1 ? bankNames[0] :
+        bankNames.slice(0, -1).join(', ') + ' e ' + bankNames[bankNames.length - 1];
+      doc.text('Fontes: Extratos bancários dos bancos ' + bankList, marginX, footerY + 4);
+    }
   }
 
   function drawColumn(doc, x, w, startY, cfg, state, theme) {
@@ -774,7 +1095,7 @@
 
     doc.setFillColor(color[0], color[1], color[2]);
     doc.rect(x, y, w, 6, 'F');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5); doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(255, 255, 255);
     doc.text(cfg.heading.toUpperCase(), x + 2.5, y + 4.2);
     y += 9;
 
@@ -786,11 +1107,11 @@
   }
 
   function drawBox(doc, x, w, y, box, state, color, lightColor) {
-    var rowH = 4.8, padX = 2.5;
+    var rowH = 5.1, padX = 2.5;
     var boxStartY = y;
     var lines = [];
     function pushRow(label, value, opts) {
-      lines.push({ label: label, value: value, bold: !!(opts && opts.bold), indent: (opts && opts.indent) || 0, negative: !!(opts && opts.negative) });
+      lines.push({ label: label, value: value, bold: !!(opts && opts.bold), indent: (opts && opts.indent) || 0, negative: !!(opts && opts.negative), muted: !!(opts && opts.muted), item: !!(opts && opts.item) });
     }
 
     if (box.type === 'saldoInicial') {
@@ -800,13 +1121,17 @@
       pushRow(box.entradasLabel, signedFmt('+', state.totals[box.entradasRef]));
       pushRow(box.saidasLabel, signedFmt('-', state.totals[box.saidasRef]));
       pushRow(box.totalLabel, fmt(state.totals[box.totalId]), { bold: true, negative: state.totals[box.totalId] < 0 });
+      (box.extras || []).forEach(function (ex) {
+        pushRow(ex.label, ex.sign === '-' ? signedFmt('-', state.totals[ex.id]) : dynamicSignedFmt(state.totals[ex.id]), { muted: true, bold: !!ex.bold });
+      });
     } else if (box.type === 'previsto') {
       pushRow(box.baseLabel, signedFmt('+', state.totals[box.baseRef]));
-      pushRow(box.subLabel, signedFmt('-', state.totals[box.subRef]));
+      pushRow(box.subLabel, signedFmt(box.subSign || '-', state.totals[box.subRef]));
       pushRow(box.totalLabel, fmt(state.totals[box.totalId]), { bold: true, negative: state.totals[box.totalId] < 0 });
     } else {
       (box.fields || []).forEach(function (f) {
         if (state.hidden[f.id]) return;
+        if (f.dynamic && !state.values[f.id]) return;
         pushRow(f.label, fmt(state.values[f.id]));
       });
       if (box.sublist) {
@@ -814,20 +1139,33 @@
         var realItems = sl.items.filter(function (it) { return it.desc !== '' || it.val !== 0; });
         if (realItems.length) {
           pushRow(box.sublist.title + ':', '', { bold: true });
-          realItems.forEach(function (it) { pushRow(it.desc || '(sem descrição)', fmt(it.val), { indent: 3 }); });
+          realItems.forEach(function (it) { pushRow(it.desc || '(sem descrição)', fmt(it.val), { indent: 3, item: true }); });
         }
       }
       pushRow(box.totalLabel, fmt(state.totals[box.totalId]), { bold: true, negative: state.totals[box.totalId] < 0 });
     }
 
     var headerH = 6.2;
+    lines.forEach(function (ln) {
+      doc.setFont('helvetica', ln.bold ? 'bold' : 'normal');
+      doc.setFontSize(ln.muted ? 7.2 : (ln.bold ? 8.9 : 8.5));
+      var valW = ln.value !== '' ? doc.getTextWidth(String(ln.value)) : 0;
+      var availW = w - padX * 2 - ln.indent - (valW ? valW + 4 : 0);
+      ln.wrapped = doc.splitTextToSize(String(ln.label), Math.max(18, availW));
+      if (!ln.wrapped.length) ln.wrapped = [''];
+    });
+    lines.forEach(function (ln, i) {
+      ln.lh = ln.muted ? 4.2 : rowH;
+      ln.gap = (ln.muted && !(i > 0 && lines[i - 1].muted)) ? 1.5 : 0;
+    });
     var noteLines = [];
     var noteLineH = 3.4;
     if (box.note) {
-      doc.setFont('helvetica', 'italic'); doc.setFontSize(6.6);
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(7);
       noteLines = doc.splitTextToSize(box.note, w - padX * 2);
     }
-    var bodyH = lines.length * rowH + 2 + (noteLines.length ? noteLines.length * noteLineH + 2 : 0);
+    var bodyH = lines.reduce(function (sum, ln) { return sum + ln.gap + Math.max(1, ln.wrapped.length) * ln.lh; }, 0) + 2 +
+      (noteLines.length ? noteLines.length * noteLineH + 2 : 0);
     var totalH = headerH + bodyH;
     var useLight = !!box.light;
     var headerColor = useLight ? lightColor : color;
@@ -843,7 +1181,7 @@
     doc.rect(x, boxStartY, w, headerH, 'F');
     var dateTxt = box.dateTag ? (box.dateTag === 'anterior' ? formatDateBr(state.dataAnterior) : formatDateBr(state.dataHoje)) : '';
     var titleTxt = box.title + (dateTxt ? (box.type === 'saldoInicial' ? '  (no início do dia ' + dateTxt + ')' : '  (' + dateTxt + ')') : '');
-    var titleFontSize = 9.2;
+    var titleFontSize = 9.7;
     doc.setFont('helvetica', 'bold'); doc.setFontSize(titleFontSize); doc.setTextColor(headerText[0], headerText[1], headerText[2]);
     var maxTitleW = w - padX * 2 - (box.badge ? 16 : 0);
     while (titleFontSize > 6 && doc.getTextWidth(titleTxt) > maxTitleW) {
@@ -852,23 +1190,31 @@
     }
     doc.text(titleTxt, x + padX, boxStartY + 4.3);
     if (box.badge) {
-      doc.setFontSize(6.4);
+      doc.setFontSize(6.8);
       doc.text('PREVISÃO', x + w - padX, boxStartY + 4.3, { align: 'right' });
     }
 
     var ly = boxStartY + headerH + 3.9;
     lines.forEach(function (ln) {
       doc.setFont('helvetica', ln.bold ? 'bold' : 'normal');
-      doc.setFontSize(ln.bold ? 8.4 : 8.0);
-      if (ln.negative) { doc.setTextColor(PALETTE.wine[0], PALETTE.wine[1], PALETTE.wine[2]); }
+      doc.setFontSize(ln.muted ? 7.2 : (ln.bold ? 8.9 : 8.5));
+      if (ln.muted) { doc.setTextColor(140, 140, 140); }
+      else if (ln.negative) { doc.setTextColor(PALETTE.wine[0], PALETTE.wine[1], PALETTE.wine[2]); }
       else { doc.setTextColor(20, 20, 20); }
-      doc.text(String(ln.label), x + padX + ln.indent, ly);
+      ly += ln.gap;
+      ln.wrapped.forEach(function (wline, i) { doc.text(wline, x + padX + ln.indent, ly + i * ln.lh); });
       if (ln.value !== '') doc.text(String(ln.value), x + w - padX, ly, { align: 'right' });
-      ly += rowH;
+      var nxtLn = lines[lines.indexOf(ln) + 1];
+      if (ln.item && nxtLn && nxtLn.item) {
+        var sepY = ly + (Math.max(1, ln.wrapped.length) - 1) * ln.lh + 1.55;
+        doc.setDrawColor(226, 226, 226); doc.setLineWidth(0.15);
+        doc.line(x + padX + ln.indent, sepY, x + w - padX, sepY);
+      }
+      ly += Math.max(1, ln.wrapped.length) * ln.lh;
     });
     if (noteLines.length) {
       ly += 1;
-      doc.setFont('helvetica', 'italic'); doc.setFontSize(6.6); doc.setTextColor(120, 120, 120);
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(7); doc.setTextColor(120, 120, 120);
       noteLines.forEach(function (nl) {
         doc.text(nl, x + padX, ly);
         ly += noteLineH;
@@ -882,72 +1228,125 @@
   function buildContasAPagarContent(doc, state, pageBreakY, fitFooterToContent) {
     var marginL = 18, marginR = 18, pageW = 210;
     var contentRight = pageW - marginR;
+    var boxW = contentRight - marginL;
+    var boxPad = 5;
+    var textL = marginL + boxPad, textR = contentRight - boxPad;
     var checkboxSize = 4.5;
-    var checkboxX = contentRight - checkboxSize;
+    var checkboxX = textR - checkboxSize;
     var valueRightX = checkboxX - 8;
+    var headerH = 7;
 
     var afterHeaderY = pdfHeader(doc, marginL, 'Relatório de contas a pagar');
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10.5); doc.setTextColor(90, 90, 90);
     doc.text((state.loja || '-') + '   |   Data: ' + (formatDateBr(state.dataHoje) || '-'), marginL, afterHeaderY);
 
-    var y = afterHeaderY + 10;
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(30, 30, 30);
-    doc.text('Descrição', marginL, y);
-    doc.text('Valor', valueRightX, y, { align: 'right' });
-    y += 2.5;
-    doc.setDrawColor(180, 180, 180); doc.setLineWidth(0.5);
-    doc.line(marginL, y, contentRight, y);
-    y += 9;
+    var y = afterHeaderY + 8;
 
-    var rows = [];
-    if (state.values.b_boletos_dda) rows.push({ desc: 'Boletos (DDA)', val: state.values.b_boletos_dda });
-    (state.sublists.b_outros_pag_prev.items || []).forEach(function (it) {
-      if (it.desc !== '' || it.val !== 0) rows.push({ desc: it.desc || '(sem descrição)', val: it.val });
-    });
-
-    if (!rows.length) {
-      doc.setFont('helvetica', 'italic'); doc.setFontSize(10.5); doc.setTextColor(140, 140, 140);
-      doc.text('Nenhum pagamento informado.', marginL, y);
-      y += 10;
-    } else {
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(11.5);
-      rows.forEach(function (r) {
-        if (y > pageBreakY) { doc.addPage(); y = 24; }
-        doc.setTextColor(20, 20, 20);
-        doc.text(r.desc, marginL, y);
-        doc.text(fmt(r.val), valueRightX, y, { align: 'right' });
-        doc.setDrawColor(60, 60, 60); doc.setLineWidth(0.35);
-        doc.rect(checkboxX, y - checkboxSize + 1.1, checkboxSize, checkboxSize);
-        y += 6.5;
-        doc.setDrawColor(225, 225, 225); doc.setLineWidth(0.2);
-        doc.line(marginL, y - 3, contentRight, y - 3);
-        y += 3;
+    function wrapWithBreaks(text, maxW) {
+      var out = [];
+      String(text).split(/\r?\n/).forEach(function (para) {
+        var w = doc.splitTextToSize(para, maxW);
+        if (!w.length) w = [''];
+        w.forEach(function (l) { out.push(l); });
       });
+      return out;
+    }
+    function boxTop(title, light) {
+      var fill = light ? PALETTE.pink : PALETTE.blue;   // 'light' = caixa do cofre (rosa forte)
+      var txt = [255, 255, 255];
+      doc.setFillColor(fill[0], fill[1], fill[2]);
+      doc.rect(marginL, y, boxW, headerH, 'F');
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5); doc.setTextColor(txt[0], txt[1], txt[2]);
+      doc.text(title, textL, y + 4.8);
+    }
+    function boxOutline(top, light) {
+      var c = light ? PALETTE.pink : PALETTE.blue;
+      doc.setDrawColor(c[0], c[1], c[2]); doc.setLineWidth(0.4);
+      doc.rect(marginL, top, boxW, y - top);
+    }
+    function saidasBox(title, light, rows, total) {
+      var top = y;
+      var c = light ? PALETTE.pink : PALETTE.blue;
+      boxTop(title, light);
+      y += headerH + 8;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5); doc.setTextColor(30, 30, 30);
+      doc.text('Descrição', textL, y);
+      doc.text('Valor', valueRightX, y, { align: 'right' });
+      y += 2.5;
+      doc.setDrawColor(180, 180, 180); doc.setLineWidth(0.4);
+      doc.line(textL, y, textR, y);
+      y += 8;
+      if (!rows.length) {
+        doc.setFont('helvetica', 'italic'); doc.setFontSize(10.5); doc.setTextColor(140, 140, 140);
+        doc.text('Nenhum pagamento informado.', textL, y);
+        y += 6;
+      } else {
+        rows.forEach(function (r) {
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(11.5);
+          var valStr = fmt(r.val);
+          var valW = doc.getTextWidth(valStr);
+          var wrapped = doc.splitTextToSize(String(r.desc), Math.max(30, valueRightX - textL - valW - 6));
+          if (!wrapped.length) wrapped = [''];
+          var rowH = wrapped.length * 5.5;
+          doc.setTextColor(20, 20, 20);
+          wrapped.forEach(function (wline, i) { doc.text(wline, textL, y + i * 5.5); });
+          doc.text(valStr, valueRightX, y, { align: 'right' });
+          doc.setDrawColor(60, 60, 60); doc.setLineWidth(0.35);
+          doc.rect(checkboxX, y - checkboxSize + 1.1, checkboxSize, checkboxSize);
+          y += rowH;
+          doc.setDrawColor(170, 170, 170); doc.setLineWidth(0.25);
+          doc.line(textL, y - 3, textR, y - 3);
+          y += 3;
+        });
+      }
+      y += 2;
+      doc.setDrawColor(c[0], c[1], c[2]); doc.setLineWidth(0.6);
+      doc.line(textL, y, textR, y);
+      y += 8;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(13.5); doc.setTextColor(20, 20, 20);
+      doc.text('Total de saídas previstas', textL, y);
+      doc.text(fmt(total), textR, y, { align: 'right' });
+      y += 5;
+      boxOutline(top, light);
+      y += 8;
+    }
+    function collect(boletos, sublist) {
+      var rows = [];
+      if (boletos) rows.push({ desc: 'Boletos (DDA)', val: boletos });
+      (sublist.items || []).forEach(function (it) {
+        if (it.desc !== '' || it.val !== 0) rows.push({ desc: it.desc || '(sem descrição)', val: it.val });
+      });
+      return rows;
     }
 
-    y += 6;
-    doc.setDrawColor(PALETTE.blue[0], PALETTE.blue[1], PALETTE.blue[2]); doc.setLineWidth(0.6);
-    doc.line(marginL, y, contentRight, y);
-    y += 9;
+    saidasBox('SAÍDAS PREVISTAS DO BANCO', false, collect(state.values.b_boletos_dda, state.sublists.b_outros_pag_prev), state.totals.b_total_saidas_previstas);
+    var cofreRows = collect(0, state.sublists.c_outros_pag_prev);
+    if (cofreRows.length) saidasBox('SAÍDAS PREVISTAS DO COFRE', true, cofreRows, state.totals.c_total_saidas_previstas);
+
+    var depTop = y;
+    boxTop('DEPÓSITOS PREVISTOS', false);
+    y += headerH + 9;
     doc.setFont('helvetica', 'bold'); doc.setFontSize(13.5); doc.setTextColor(20, 20, 20);
-    doc.text('Total de saídas previstas', marginL, y);
-    doc.text(fmt(state.totals.b_total_saidas_previstas), contentRight, y, { align: 'right' });
+    doc.text('Total a ser depositado', textL, y);
+    doc.text(fmt(state.totals.b_deposito_previsto_total), textR, y, { align: 'right' });
+    y += 5;
+    boxOutline(depTop, false);
+    y += 8;
 
-    if (state.obsContasPagar) {
-      y += 12;
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(30, 30, 30);
-      doc.text('Observações', marginL, y);
-      y += 5.5;
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(60, 60, 60);
-      var obsLines = doc.splitTextToSize(state.obsContasPagar, contentRight - marginL);
-      obsLines.forEach(function (ln) {
-        if (y > pageBreakY) { doc.addPage(); y = 24; }
-        doc.text(ln, marginL, y);
-        y += 5;
-      });
-    }
+    var obsTop = y;
+    boxTop('OBSERVAÇÕES', false);
+    y += headerH + 8;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(11.5);
+    var obsLines = wrapWithBreaks(state.obsContasPagar || '(nenhuma observação informada)', boxW - boxPad * 2);
+    doc.setTextColor(60, 60, 60);
+    obsLines.forEach(function (ln) {
+      doc.text(ln, textL, y);
+      y += 6;
+    });
+    y += 1;
+    boxOutline(obsTop, false);
 
-    var footerY = fitFooterToContent ? (y + 10) : 289;
+    var footerY = fitFooterToContent ? (y + 8) : 289;
     doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(150, 150, 150);
     doc.text('Gerado em ' + new Date().toLocaleString('pt-BR'), marginL, footerY);
   }
@@ -970,7 +1369,7 @@
   }
 
   function createCanvasPdfShim(scale, logoImg) {
-    var pageWmm = 210, ceilingHmm = 2200;
+    var pageWmm = 210, ceilingHmm = 1400;
     var canvas = document.createElement('canvas');
     canvas.width = Math.round(pageWmm * scale);
     canvas.height = Math.round(ceilingHmm * scale);
@@ -1044,8 +1443,8 @@
       },
       addPage: function () { /* single continuous image — no real page breaks */ },
       _finish: function () {
-        var pad = 10, a4Hmm = 297;
-        var usedH = Math.max(a4Hmm, Math.min(ceilingHmm, usedMaxY + pad));
+        var pad = 10;
+        var usedH = Math.min(ceilingHmm, usedMaxY + pad);
         var out = document.createElement('canvas');
         out.width = canvas.width;
         out.height = Math.max(1, Math.round(usedH * scale));
@@ -1064,14 +1463,14 @@
 
   async function buildMovimentacoesImageBlob(state) {
     var logoImg = await preloadLogoImage();
-    var shim = createCanvasPdfShim(6, logoImg);
+    var shim = createCanvasPdfShim(10, logoImg);
     buildPdfContent(shim, state, true);
     return canvasToPngBlob(shim._finish());
   }
 
   async function buildContasAPagarImageBlob(state) {
     var logoImg = await preloadLogoImage();
-    var shim = createCanvasPdfShim(6, logoImg);
+    var shim = createCanvasPdfShim(10, logoImg);
     buildContasAPagarContent(shim, state, 100000, true);
     return canvasToPngBlob(shim._finish());
   }
@@ -1106,9 +1505,456 @@
   }
 
   function goToStep(n) {
-    document.body.classList.remove('step1', 'step2');
+    document.body.classList.remove('step1', 'step2', 'step3');
     document.body.classList.add('step' + n);
     window.scrollTo(0, 0);
+  }
+
+  // ================= OFX import (extrato bancário) =================
+  var OFX_BANKS = [
+    { id: 'sicredi', label: 'Sicredi' },
+    { id: 'itau', label: 'Itaú' },
+    { id: 'bradesco', label: 'Bradesco' },
+    { id: 'banestes', label: 'Banestes' },
+    { id: 'sicoob', label: 'Sicoob' }
+  ];
+  function catDests(cats, extraId, extraLabel) {
+    return cats.map(function (c) { return { id: c.id, label: c.catLabel || c.label }; })
+      .concat([{ id: extraId, label: extraLabel }, { id: 'ignore', label: 'Ignorar (não importar)' }]);
+  }
+  var OFX_ENTRADA_DESTS = catDests(BANK_ENTRADA_CATS, 'outras_entradas', 'Outras entradas');
+  var OFX_SAIDA_DESTS = catDests(BANK_SAIDA_CATS, 'outras_saidas', 'Outras saídas');
+  var OFX_FIELD_LABELS = {};
+  BANK_ENTRADA_CATS.concat(BANK_SAIDA_CATS).forEach(function (c) { OFX_FIELD_LABELS[c.id] = c.catLabel || c.label; });
+  OFX_FIELD_LABELS.b_transferencias_entrada += ' (entrada)';
+  OFX_FIELD_LABELS.b_transferencias_saida += ' (saída)';
+  var ofxTxns = [];
+  var ofxSeenKeys = {};
+
+  function ofxBankLabel(id) {
+    var b = OFX_BANKS.filter(function (x) { return x.id === id; })[0];
+    return b ? b.label : id;
+  }
+
+  function ofxSetStatus(msg, kind) {
+    var el = document.getElementById('ofx-status-msg');
+    el.textContent = msg; el.className = kind || '';
+  }
+
+  function ofxFormatDateBr(yyyymmdd) {
+    if (!yyyymmdd || yyyymmdd.length < 8) return yyyymmdd || '-';
+    return yyyymmdd.slice(6, 8) + '/' + yyyymmdd.slice(4, 6) + '/' + yyyymmdd.slice(0, 4);
+  }
+
+  // Converts OFX's loose SGML tag-soup into well-formed XML: closes leaf
+  // value tags on the fly, leaves already-closed tags and container tags
+  // (which have nested children) alone, and wraps everything in a single
+  // synthetic root so a truncated/odd file still parses as valid XML.
+  function ofxToXmlText(raw) {
+    var idx = raw.search(/<OFX[\s>]/i);
+    var body = idx >= 0 ? raw.slice(idx) : raw;
+    var lines = body.split(/\r\n|\r|\n/);
+    var out = [];
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].trim();
+      if (!line) continue;
+      if (/^<\/[A-Za-z0-9.]+>$/.test(line)) { out.push(line); continue; }
+      var m = line.match(/^<([A-Za-z0-9.]+)>(.*)$/);
+      if (m) {
+        var tag = m[1], rest = m[2];
+        if (rest === '') { out.push('<' + tag + '>'); continue; }
+        if (/<\/[A-Za-z0-9.]+>$/.test(rest)) { out.push(line); continue; }
+        var val = rest.replace(/&(?!amp;|lt;|gt;|quot;|apos;|#\d+;)/g, '&amp;');
+        out.push('<' + tag + '>' + val + '</' + tag + '>');
+      } else {
+        out.push(line);
+      }
+    }
+    return '<OFXROOT>' + out.join('') + '</OFXROOT>';
+  }
+
+  function ofxParseTransactions(xmlText) {
+    var doc = new DOMParser().parseFromString(xmlText, 'text/xml');
+    if (doc.getElementsByTagName('parsererror').length) return null;
+    var nodes = doc.getElementsByTagName('STMTTRN');
+    var out = [];
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var g = function (tag) { var n = el.getElementsByTagName(tag)[0]; return n ? (n.textContent || '').trim() : ''; };
+      var amt = parseFloat(g('TRNAMT'));
+      if (isNaN(amt)) continue;
+      var name = g('NAME') || g('PAYEE');
+      var memo = g('MEMO');
+      var desc = name;
+      if (memo && memo !== name) desc = desc ? desc + ' - ' + memo : memo;
+      out.push({
+        date: g('DTPOSTED').slice(0, 8),
+        desc: desc || '(sem descrição)',
+        amount: amt,
+        fitid: g('FITID')
+      });
+    }
+    return out;
+  }
+
+  function ofxParseStatementMeta(xmlText) {
+    var doc = new DOMParser().parseFromString(xmlText, 'text/xml');
+    function g(tag) { var n = doc.getElementsByTagName(tag)[0]; return n ? (n.textContent || '').trim() : ''; }
+    var balAmt = g('BALAMT');
+    var dtAsOf = g('DTASOF') || g('DTEND') || g('DTSERVER');
+    return {
+      ledgerBal: balAmt !== '' && !isNaN(parseFloat(balAmt)) ? parseFloat(balAmt) : null,
+      date: dtAsOf ? dtAsOf.slice(0, 8) : ''
+    };
+  }
+
+  async function ofxReadFileText(file) {
+    var buf = await file.arrayBuffer();
+    var text = new TextDecoder('utf-8').decode(buf);
+    if (text.indexOf('\uFFFD') !== -1) {
+      try { text = new TextDecoder('windows-1252').decode(buf); } catch (e) { /* keep utf-8 text */ }
+    }
+    return text;
+  }
+
+  var ofxImportLog = [];
+
+  function ofxSuggestDest(desc, isEntrada) {
+    var d = (desc || '').toUpperCase();
+    var has = function (s) { return d.indexOf(s) !== -1; };
+    if (isEntrada) {
+      if (has('DEP') || has('DEPOSITO') || has('DEPÓSITO')) return 'b_depositos';
+      if (has('PIX') && has('CIELO')) return 'b_e_pix';
+      if (has('PIX') && has('REDE')) return 'b_e_pix';
+      if (has('CIELO')) return 'b_e_cielo';
+      if (has('REDE')) return 'b_e_rede';
+      if (has('BOLT')) return 'b_e_bolt';
+      if (has('MAIS TODOS')) return 'b_e_cashback';
+      if (has('ALELO') || has('VR') || has('PLUXEE') || has('SODEXO') || has('COMPROCARD') ||
+        has('VALECARD') || has('NIAP') || has('TICKET') || has('CABAL') || has('UP BRASIL') ||
+        has('GREENCARD') || has('VALEMAIS')) return 'b_e_alimentacao';
+      if (has('PIX')) return 'b_e_pix';
+      return 'outras_entradas';
+    } else {
+      if (has('BOLETO')) return 'b_boletos_dda_pago';
+      if (has('PIX') && (has('DEVOLUCAO') || has('DEVOLUÇÃO') || has('ESTORNO'))) return 'b_s_devolucoes';
+      if (has('DEB') && has('FATURA')) return 'b_s_cartao_empresarial';
+      return 'outras_saidas';
+    }
+  }
+
+  var ofxCurrentBankId = null;
+  var ofxCurrentMeta = null;
+
+  function ofxRenderTable() {
+    var area = document.getElementById('ofx-transactions-area');
+    if (!ofxTxns.length) { area.innerHTML = ''; ofxUpdateSummary(); return; }
+    var meta = ofxCurrentMeta || {};
+    var hasLedger = typeof meta.ledgerBal === 'number';
+    var entradas = 0, saidas = 0;
+    ofxTxns.forEach(function (t) { if (t.amount >= 0) entradas += t.amount; else saidas += Math.abs(t.amount); });
+    var saldoInicialCalc = hasLedger ? (meta.ledgerBal - entradas + saidas) : null;
+
+    var html = '<div class="ofx-table">';
+    html += '<div class="ofx-saldo-row">' +
+      '<span class="ofx-saldo-label">Saldo inicial do extrato</span>' +
+      '<div class="ofx-saldo-value-wrap">' +
+      '<button type="button" class="sign-toggle"' + (hasLedger ? ' disabled' : '') + ' data-target="ofx-saldo-inicial-input" id="ofx-saldo-inicial-sign">' +
+      (hasLedger && saldoInicialCalc < 0 ? '\u2212' : '+') + '</button>' +
+      '<input type="text" inputmode="decimal" class="money-input" id="ofx-saldo-inicial-input"' + (hasLedger ? ' readonly' : '') + ' placeholder="0,00">' +
+      '</div>' +
+      '<span class="ofx-saldo-dest">\u2192 Saldo anterior (bancárias)</span>' +
+      '</div>';
+    html += '<div class="ofx-table-header"><span>Data</span><span>Descrição</span><span>Valor</span><span>Destino</span></div>';
+    ofxTxns.forEach(function (t, i) {
+      var isEntrada = t.amount >= 0;
+      var dests = isEntrada ? OFX_ENTRADA_DESTS : OFX_SAIDA_DESTS;
+      var destLabel = (dests.filter(function (d) { return d.id === t.dest; })[0] || {}).label || '';
+      html += '<div class="ofx-txn-row">' +
+        '<span class="ofx-txn-date">' + ofxFormatDateBr(t.date) + '</span>' +
+        '<span class="ofx-txn-desc">' + escapeHtml(t.desc) + (t.bankId ? ' <span style="color:var(--muted);font-size:0.75rem;">(' + escapeHtml(ofxBankLabel(t.bankId)) + ')</span>' : '') + '</span>' +
+        '<span class="ofx-txn-value ' + (isEntrada ? 'ofx-positive' : 'ofx-negative') + '">' + (isEntrada ? '+ ' : '- ') + fmt(Math.abs(t.amount)) + '</span>' +
+        '<input type="text" class="ofx-txn-dest cat-input" data-idx="' + i + '" data-dest="' + t.dest + '" value="' + escapeHtml(destLabel) + '" placeholder="Digite para pesquisar" autocomplete="off" spellcheck="false">' +
+        '</div>';
+    });
+    if (hasLedger) {
+      html += '<div class="ofx-saldo-row">' +
+        '<span class="ofx-saldo-label">Saldo final do extrato</span>' +
+        '<span class="ofx-saldo-value-readonly">' + fmt(meta.ledgerBal) + '</span>' +
+        '<span class="ofx-saldo-dest">(informativo)</span>' +
+        '</div>';
+    }
+    html += '</div>';
+    area.innerHTML = html;
+
+    var siInput = document.getElementById('ofx-saldo-inicial-input');
+    if (hasLedger) {
+      siInput.value = formatMasked(Math.abs(saldoInicialCalc));
+      siInput.dataset.sign = saldoInicialCalc < 0 ? '-1' : '1';
+    } else {
+      attachMoneyMask(siInput);
+    }
+    ofxUpdateSummary();
+  }
+
+  function ofxUpdateSummary() {
+    var area = document.getElementById('ofx-summary-area');
+    var applyBtn = document.getElementById('btn-ofx-apply');
+    var sums = {}, listCounts = { outras_entradas: 0, outras_saidas: 0 };
+    ofxTxns.forEach(function (t) {
+      if (t.dest === 'ignore') return;
+      if (t.dest === 'outras_entradas' || t.dest === 'outras_saidas') { listCounts[t.dest]++; }
+      else { sums[t.dest] = (sums[t.dest] || 0) + Math.abs(t.amount); }
+    });
+    var html = '';
+    var any = ofxTxns.length > 0;
+    if (any) {
+      html += '<div class="ofx-summary-title">Resumo da importação</div>';
+      Object.keys(sums).forEach(function (fid) {
+        var current = num(fid);
+        var note = current ? ' (soma a ' + fmt(current) + ' atual = ' + fmt(current + sums[fid]) + ')' : '';
+        html += '<div class="ofx-summary-row"><span>' + OFX_FIELD_LABELS[fid] + '</span><span>+ ' + fmt(sums[fid]) + note + '</span></div>';
+      });
+      if (listCounts.outras_entradas) html += '<div class="ofx-summary-row"><span>Outras entradas</span><span>+ ' + listCounts.outras_entradas + ' item(ns)</span></div>';
+      if (listCounts.outras_saidas) html += '<div class="ofx-summary-row"><span>Outras saídas</span><span>+ ' + listCounts.outras_saidas + ' item(ns)</span></div>';
+    }
+    area.innerHTML = html;
+    applyBtn.disabled = !any;
+  }
+
+  function ofxSyncDestsFromDom() {
+    document.querySelectorAll('.ofx-txn-dest').forEach(function (el) {
+      var idx = parseInt(el.getAttribute('data-idx'), 10);
+      if (ofxTxns[idx]) ofxTxns[idx].dest = el.getAttribute('data-dest');
+    });
+  }
+
+  // ---- Categorias: campo com pesquisa e lista suspensa ----
+  var catActive = null;
+  function catNorm(v) { return String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
+  function catOptionsFor(idx) { return ofxTxns[idx] && ofxTxns[idx].amount >= 0 ? OFX_ENTRADA_DESTS : OFX_SAIDA_DESTS; }
+  function catLabelOf(idx, id) {
+    var d = catOptionsFor(idx).filter(function (x) { return x.id === id; })[0];
+    return d ? d.label : '';
+  }
+  function catPopupEl() { return document.getElementById('cat-popup'); }
+  function catHighlight(i) {
+    var opts = catPopupEl().querySelectorAll('.cat-opt');
+    if (!opts.length) return;
+    if (i < 0) i = opts.length - 1;
+    if (i >= opts.length) i = 0;
+    opts.forEach(function (o, k) { o.classList.toggle('active', k === i); });
+    if (catActive) catActive.hi = i;
+    if (opts[i].scrollIntoView) opts[i].scrollIntoView({ block: 'nearest' });
+  }
+  function catOpen(input, filterText) {
+    var idx = parseInt(input.getAttribute('data-idx'), 10);
+    var q = catNorm(filterText);
+    var current = input.getAttribute('data-dest');
+    var opts = catOptionsFor(idx).filter(function (d) { return !q || catNorm(d.label).indexOf(q) !== -1; });
+    var popup = catPopupEl();
+    popup.innerHTML = opts.length ? opts.map(function (d) {
+      return '<div class="cat-opt' + (d.id === current ? ' selected' : '') + '" data-id="' + d.id + '">' + escapeHtml(d.label) + '</div>';
+    }).join('') : '<div class="cat-empty">Nenhuma categoria encontrada</div>';
+    var r = input.getBoundingClientRect();
+    popup.hidden = false;
+    popup.style.left = r.left + 'px';
+    popup.style.minWidth = Math.max(r.width, 240) + 'px';
+    var ph = popup.offsetHeight;
+    var below = (window.innerHeight || 800) - r.bottom;
+    popup.style.top = ((below < ph + 8 && r.top > ph + 8) ? (r.top - ph - 2) : (r.bottom + 2)) + 'px';
+    catActive = { input: input, idx: idx, hi: 0 };
+    var start = 0;
+    if (!q) opts.forEach(function (d, k) { if (d.id === current) start = k; });
+    catHighlight(start);
+  }
+  function catClose(restore) {
+    catPopupEl().hidden = true;
+    if (catActive && restore) {
+      catActive.input.value = catLabelOf(catActive.idx, catActive.input.getAttribute('data-dest'));
+    }
+    catActive = null;
+  }
+  function catSelect(id) {
+    if (!catActive) return;
+    var input = catActive.input, idx = catActive.idx;
+    input.setAttribute('data-dest', id);
+    if (ofxTxns[idx]) ofxTxns[idx].dest = id;
+    input.value = catLabelOf(idx, id);
+    catClose(false);
+    ofxUpdateSummary();
+  }
+  function wireCategoryCombo() {
+    var area = document.getElementById('ofx-transactions-area');
+    var popup = catPopupEl();
+    function isCat(e) { return e.target && e.target.classList && e.target.classList.contains('cat-input'); }
+    area.addEventListener('focusin', function (e) { if (isCat(e)) { e.target.select(); catOpen(e.target, ''); } });
+    area.addEventListener('click', function (e) { if (isCat(e) && popup.hidden) { e.target.select(); catOpen(e.target, ''); } });
+    area.addEventListener('input', function (e) { if (isCat(e)) catOpen(e.target, e.target.value); });
+    area.addEventListener('focusout', function (e) { if (isCat(e)) catClose(true); });
+    area.addEventListener('keydown', function (e) {
+      if (!isCat(e)) return;
+      if (!catActive) {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); catOpen(e.target, ''); }
+        return;
+      }
+      if (e.key === 'ArrowDown') { e.preventDefault(); catHighlight(catActive.hi + 1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); catHighlight(catActive.hi - 1); }
+      else if (e.key === 'Enter') {
+        e.preventDefault();
+        var act = popup.querySelector('.cat-opt.active');
+        if (act) catSelect(act.getAttribute('data-id'));
+      }
+      else if (e.key === 'Escape') { e.preventDefault(); catClose(true); }
+      else if (e.key === 'Tab') { catClose(true); }
+    });
+    popup.addEventListener('mousedown', function (e) {
+      var o = e.target.closest ? e.target.closest('.cat-opt') : null;
+      if (o) { e.preventDefault(); catSelect(o.getAttribute('data-id')); }
+    });
+    window.addEventListener('scroll', function (e) {
+      if (catActive && !(e.target && e.target.id === 'cat-popup')) catClose(true);
+    }, true);
+    window.addEventListener('resize', function () { if (catActive) catClose(true); });
+  }
+
+  function ofxResetImport() {
+    ofxTxns = []; ofxSeenKeys = {};
+    ofxCurrentBankId = null; ofxCurrentMeta = null;
+    document.getElementById('ofx-transactions-area').innerHTML = '';
+    document.getElementById('ofx-summary-area').innerHTML = '';
+    document.getElementById('ofx-file-input').value = '';
+    document.getElementById('ofx-upload-area').style.display = '';
+    ofxSetStatus('', '');
+  }
+
+  function renderImportLog() {
+    var tbody = document.getElementById('import-log-tbody');
+    if (!ofxImportLog.length) {
+      tbody.innerHTML = '<tr><td colspan="4" class="import-log-empty">Nenhum extrato importado ainda.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = ofxImportLog.map(function (e) {
+      return '<tr>' +
+        '<td>' + ofxFormatDateBr(e.date) + '</td>' +
+        '<td>' + escapeHtml(e.bank) + '</td>' +
+        '<td>' + (e.saldoInicial != null ? fmt(e.saldoInicial) : '\u2013') + '</td>' +
+        '<td>' + (e.saldoFinal != null ? fmt(e.saldoFinal) : '\u2013') + '</td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  function wireOfxImport() {
+    document.getElementById('btn-toggle-import-log').addEventListener('click', function () {
+      var body = document.getElementById('import-log-body');
+      var collapsed = body.style.display === 'none';
+      body.style.display = collapsed ? '' : 'none';
+      this.textContent = collapsed ? '\u2212' : '+';
+    });
+
+    document.getElementById('btn-open-ofx-import').addEventListener('click', function () {
+      ofxResetImport();
+      goToStep(3);
+    });
+
+    document.getElementById('btn-ofx-add-file').addEventListener('click', async function () {
+      var bankId = document.getElementById('ofx-bank-select').value;
+      var fileInput = document.getElementById('ofx-file-input');
+      var file = fileInput.files && fileInput.files[0];
+      if (!file) { ofxSetStatus('Selecione um arquivo .ofx primeiro.', 'error'); return; }
+      var alreadyImported = ofxImportLog.some(function (e) { return e.bankId === bankId; });
+      if (alreadyImported) {
+        ofxSetStatus('Já foi importado um extrato de ' + ofxBankLabel(bankId) + ' nesta sessão. Limpe o formulário para importar novamente.', 'error');
+        return;
+      }
+      try {
+        var text = await ofxReadFileText(file);
+        var xmlText = ofxToXmlText(text);
+        var txns = ofxParseTransactions(xmlText);
+        if (!txns || !txns.length) { ofxSetStatus('Nenhum lançamento encontrado nesse arquivo.', 'error'); return; }
+        var meta = ofxParseStatementMeta(xmlText);
+        ofxCurrentBankId = bankId;
+        ofxCurrentMeta = meta;
+        ofxTxns = []; ofxSeenKeys = {};
+        txns.forEach(function (t) {
+          var key = t.fitid || (t.date + '|' + t.desc + '|' + t.amount);
+          if (ofxSeenKeys[key]) return;
+          ofxSeenKeys[key] = true;
+          t.bankId = bankId;
+          t.dest = ofxSuggestDest(t.desc, t.amount >= 0);
+          ofxTxns.push(t);
+        });
+        ofxRenderTable();
+        document.getElementById('ofx-upload-area').style.display = 'none';
+
+        var msg = ofxTxns.length + ' lançamento(s) de ' + ofxBankLabel(bankId) + ' processado(s).';
+        var antDate = document.getElementById('data-anterior').value;
+        var dateWarn = '';
+        if (meta.date && antDate && meta.date !== antDate.replace(/-/g, '')) {
+          dateWarn = ' Atenção: a data do extrato (' + ofxFormatDateBr(meta.date) + ') é diferente da data definida como dia anterior (' + formatDateBr(antDate) + ') — revise antes de continuar.';
+        }
+        ofxSetStatus(msg + dateWarn, dateWarn ? 'error' : 'success');
+      } catch (e) {
+        ofxSetStatus('Não foi possível ler esse arquivo. Confirme que é um extrato .ofx válido.', 'error');
+      }
+    });
+
+    wireCategoryCombo();
+
+    document.getElementById('btn-ofx-cancel').addEventListener('click', function () {
+      ofxResetImport();
+      goToStep(2);
+    });
+
+    document.getElementById('btn-ofx-apply').addEventListener('click', function () {
+      ofxSyncDestsFromDom();
+      var sums = {};
+      ofxTxns.forEach(function (t) {
+        if (t.dest === 'ignore' || t.dest === 'outras_entradas' || t.dest === 'outras_saidas') return;
+        sums[t.dest] = (sums[t.dest] || 0) + Math.abs(t.amount);
+      });
+      Object.keys(sums).forEach(function (fid) {
+        var el = document.getElementById(fid);
+        if (el) el.value = formatMasked((parseBr(el.value) || 0) + sums[fid]);
+      });
+      ofxTxns.forEach(function (t) {
+        if (t.dest === 'outras_entradas') addSubRow('b_outras_entradas', t.desc, Math.abs(t.amount), true);
+        if (t.dest === 'outras_saidas') addSubRow('b_outras_saidas', t.desc, Math.abs(t.amount), true);
+      });
+
+      var siInput = document.getElementById('ofx-saldo-inicial-input');
+      var siSign = siInput.dataset.sign === '-1' ? -1 : 1;
+      var siVal = (parseBr(siInput.value) || 0) * siSign;
+      var bSaldoEl = document.getElementById('b_saldo_inicial');
+      var newSigned = numSigned('b_saldo_inicial') + siVal;
+      bSaldoEl.value = formatMasked(Math.abs(newSigned));
+      bSaldoEl.dataset.sign = newSigned < 0 ? '-1' : '1';
+      var bSaldoToggle = document.querySelector('.sign-toggle[data-target="b_saldo_inicial"]');
+      if (bSaldoToggle) {
+        bSaldoToggle.textContent = newSigned < 0 ? '\u2212' : '+';
+        bSaldoToggle.classList.toggle('negative', newSigned < 0);
+      }
+
+      var entradas = 0, saidas = 0;
+      ofxTxns.forEach(function (t) {
+        if (t.dest === 'ignore') return;
+        if (t.amount >= 0) entradas += t.amount; else saidas += Math.abs(t.amount);
+      });
+      var meta = ofxCurrentMeta || {};
+      ofxImportLog.push({
+        date: meta.date || todayStr(),
+        bank: ofxBankLabel(ofxCurrentBankId), bankId: ofxCurrentBankId,
+        saldoInicial: siVal, entradas: entradas, saidas: saidas,
+        saldoFinal: (typeof meta.ledgerBal === 'number') ? meta.ledgerBal : null
+      });
+      renderImportLog();
+
+      var count = ofxTxns.filter(function (t) { return t.dest !== 'ignore'; }).length;
+      ofxResetImport();
+      recalc(); saveDraft();
+      goToStep(2);
+      setStatus(count + ' lançamento(s) do extrato aplicado(s) aos campos.', 'success');
+    });
   }
 
   // ================= Wiring =================
@@ -1134,6 +1980,7 @@
       var listContainer = row.parentElement;
       if (!listContainer || !listContainer.id || listContainer.id.slice(-5) !== '-list') return;
       var listId = listContainer.id.slice(0, -5);
+      if (IMPORT_ONLY_SUBLISTS.indexOf(listId) !== -1) return;
       addSubRow(listId);
       recalc(); saveDraft();
       var newRow = listContainer.lastElementChild;
@@ -1217,7 +2064,9 @@
         r.style.display = '';
         var inp = r.querySelector('input'); if (inp) inp.disabled = false;
       });
-      ALL_SUBLIST_IDS.forEach(function (id) { document.getElementById(id + '-list').innerHTML = ''; addSubRow(id); });
+      ALL_SUBLIST_IDS.forEach(function (id) { document.getElementById(id + '-list').innerHTML = ''; if (IMPORT_ONLY_SUBLISTS.indexOf(id) === -1) addSubRow(id); });
+      ofxImportLog = []; ofxCurrentBankId = null; ofxCurrentMeta = null;
+      renderImportLog();
       SALDO_INICIAL_IDS.forEach(function (fid) {
         var el = document.getElementById(fid);
         if (el) delete el.dataset.sign;
@@ -1256,12 +2105,6 @@
     document.getElementById('btn-continuar').addEventListener('click', function () {
       setStatus('', '');
       var state = getState();
-      var boletosError = document.getElementById('boletos-error');
-      if (!state.values.b_boletos_dda || state.values.b_boletos_dda <= 0) {
-        if (boletosError) boletosError.textContent = 'Preencha o valor de boletos (DDA) antes de continuar.';
-        return;
-      }
-      if (boletosError) boletosError.textContent = '';
       goToStep(2);
       recalc();
       saveDraft();
@@ -1276,6 +2119,10 @@
       var state = getState();
       if (!state.loja || !state.dataAnterior) {
         setStatus('Selecione a loja e a data das movimentações antes de gerar a imagem.', 'error');
+        return;
+      }
+      if (state.values.b_transferencias_entrada !== state.values.b_transferencias_saida) {
+        setStatus('O valor de "Transferências entre contas" está diferente entre ENTRADAS (' + fmt(state.values.b_transferencias_entrada) + ') e SAÍDAS (' + fmt(state.values.b_transferencias_saida) + ') na coluna do banco. Revise os extratos importados antes de baixar a imagem.', 'error');
         return;
       }
       var blob;
@@ -1294,19 +2141,24 @@
   // ================= Init =================
   renderColumn('col-bancarias', CONFIG.bancarias);
   renderColumn('col-cofre', CONFIG.cofre);
+  document.getElementById('col-bancarias').insertBefore(
+    document.getElementById('import-log-container'),
+    document.getElementById('box-b-saldo-inicial')
+  );
   renderStep1Box();
-  renderSaldoGeral();
   wireEvents();
+  wireOfxImport();
 
   document.getElementById('data-anterior').value = yesterdayStr();
   document.getElementById('data-hoje').value = todayStr();
   var hadDraft = loadDraft();
   ALL_SUBLIST_IDS.forEach(function (id) {
-    if (document.querySelectorAll('#' + id + '-list .sub-row').length === 0) addSubRow(id);
+    if (IMPORT_ONLY_SUBLISTS.indexOf(id) === -1 && document.querySelectorAll('#' + id + '-list .sub-row').length === 0) addSubRow(id);
   });
   document.querySelectorAll('.money-input').forEach(function (el) {
     if (!el.classList.contains('value-input')) attachMoneyMask(el);
   });
+  renderImportLog();
   updateDateTags();
   updateRestoreLinks();
   recalc();
