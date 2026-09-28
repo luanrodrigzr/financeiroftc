@@ -207,7 +207,8 @@
   #step1-box-container .box-body, #step1-deposito-container .box-body, #step1-cofre-container .box-body { padding: 22px; }
   #step1-box-container label, #step1-deposito-container label, #step1-cofre-container label { font-size: 0.85rem; }
   #step1-deposito-container { margin-bottom: 12px; }
-  #step1-obs-container { max-width: 640px; margin: 0 auto; padding-bottom: 28px; }
+  #step1-obs-container { max-width: 640px; margin: 0 auto; }
+  #step1-cofre-container { padding-bottom: 28px; }
   #step1-obs-container .box-header { font-size: 1.05rem; padding: 12px 16px; }
   #step1-obs-container .box-body { padding: 22px; }
   .obs-textarea {
@@ -221,6 +222,13 @@
   .ofx-bank-field { min-width: 150px; }
   .ofx-file-field { flex: 1; min-width: 220px; }
   .ofx-add-btn { white-space: nowrap; }
+  .ofx-mode-switch { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 12px; }
+  .ofx-mode-btn { border: none; background: var(--surface); color: var(--muted); padding: 7px 14px; font-size: 0.82rem; cursor: pointer; font-family: inherit; }
+  .ofx-mode-btn.active { background: var(--blue); color: #fff; font-weight: bold; }
+  .ofx-manual-field { flex: 1; min-width: 190px; }
+  .ofx-manual-wrap { display: flex; gap: 6px; align-items: center; }
+  .ofx-manual-field[hidden], .ofx-file-field[hidden], .ofx-add-btn[hidden] { display: none !important; }
+  .import-log-manual { color: var(--muted); font-size: 0.72rem; }
   #step3-container .hint { font-size: 0.78rem; color: var(--muted); margin: 4px 0 10px; }
   #ofx-status-msg { font-size: 0.82rem; min-height: 1.1em; margin-bottom: 6px; }
   #ofx-status-msg.error { color: var(--wine); }
@@ -325,10 +333,10 @@
   .import-log-table-wrap { overflow-x: auto; }
   .import-log-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 0.82rem; }
   .import-log-table th, .import-log-table td { padding: 5px 8px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .import-log-table th:nth-child(1), .import-log-table td:nth-child(1) { width: 26%; }
-  .import-log-table th:nth-child(2), .import-log-table td:nth-child(2) { width: 22%; }
+  .import-log-table th:nth-child(1), .import-log-table td:nth-child(1) { width: 22%; }
+  .import-log-table th:nth-child(2), .import-log-table td:nth-child(2) { width: 28%; }
   .import-log-table th:nth-child(3), .import-log-table td:nth-child(3),
-  .import-log-table th:nth-child(4), .import-log-table td:nth-child(4) { width: 26%; }
+  .import-log-table th:nth-child(4), .import-log-table td:nth-child(4) { width: 25%; }
   .import-log-table th:first-child, .import-log-table td:first-child,
   .import-log-table th:nth-child(2), .import-log-table td:nth-child(2) { text-align: left; }
   .import-log-table thead th { font-size: 0.72rem; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
@@ -375,7 +383,6 @@
     <p class="intro-step1">Preencha as saídas e depósitos previstos de hoje para gerar o relatório de contas a pagar e continuar para o relatório completo.</p>
     <div id="step1-deposito-container"></div>
     <div id="step1-box-container"></div>
-    <div id="step1-cofre-container"></div>
 
     <div id="step1-obs-container">
       <div class="box theme-blue">
@@ -385,6 +392,8 @@
         </div>
       </div>
     </div>
+
+    <div id="step1-cofre-container"></div>
 
     <div id="import-log-container">
       <div class="box theme-blue">
@@ -416,6 +425,10 @@
         <div class="box-header">IMPORTAR EXTRATO OFX</div>
         <div class="box-body">
           <div id="ofx-upload-area">
+            <div class="ofx-mode-switch" id="ofx-mode-switch">
+              <button type="button" class="ofx-mode-btn active" data-mode="file">Arquivo OFX</button>
+              <button type="button" class="ofx-mode-btn" data-mode="manual">Sem movimentações</button>
+            </div>
             <div class="ofx-upload-row">
               <div class="field ofx-bank-field">
                 <label for="ofx-bank-select">Banco</label>
@@ -427,13 +440,27 @@
                   <option value="sicoob">Sicoob</option>
                 </select>
               </div>
-              <div class="field ofx-file-field">
+              <div class="field ofx-file-field" id="ofx-file-field">
                 <label for="ofx-file-input">Arquivo .ofx</label>
                 <input type="file" id="ofx-file-input" accept=".ofx,.qfx,text/plain">
               </div>
+              <div class="field ofx-manual-field" id="ofx-manual-ant-field" hidden>
+                <label for="ofx-manual-ant">Saldo anterior</label>
+                <div class="ofx-manual-wrap">
+                  <button type="button" class="sign-toggle" data-target="ofx-manual-ant">+</button>
+                  <input type="text" inputmode="decimal" class="money-input" id="ofx-manual-ant" placeholder="0,00">
+                </div>
+              </div>
+              <div class="field ofx-manual-field" id="ofx-manual-fin-field" hidden>
+                <label for="ofx-manual-fin">Saldo final</label>
+                <div class="ofx-manual-wrap">
+                  <button type="button" class="sign-toggle" data-target="ofx-manual-fin" disabled>+</button>
+                  <input type="text" inputmode="decimal" class="money-input" id="ofx-manual-fin" placeholder="0,00" readonly title="Igual ao saldo anterior, pois não houve movimentações">
+                </div>
+              </div>
               <button type="button" class="secondary ofx-add-btn" id="btn-ofx-add-file">Processar extrato</button>
             </div>
-            <div class="hint">Selecione o banco e o arquivo exportado do internet banking. Um extrato por vez.</div>
+            <div class="hint" id="ofx-hint">Selecione o banco e o arquivo exportado do internet banking. Um extrato por vez.</div>
           </div>
           <p id="ofx-status-msg"></p>
 
@@ -1015,11 +1042,11 @@
     var startY = afterHeaderY + 5.5;
     var yLeft = drawColumn(doc, xLeft, colW, startY, CONFIG.bancarias, state, 'blue');
     var yRight = drawColumn(doc, xRight, colW, startY, CONFIG.cofre, state, 'pink');
-    var yGeral = yRight;
+    var yGeral = Math.max(yLeft, yRight) + 4;
 
     var fullW = colW * 2 + 9;
-    var bandW = colW;
-    var xGeral = xRight;
+    var bandW = Math.min(120, fullW);
+    var xGeral = xLeft + (fullW - bandW) / 2;
     var geralNegative = state.totals.resultado_dia < 0;
     var geralColor = geralNegative ? PALETTE.wine : PALETTE.positive;
     var padGeral = 2.5;
@@ -1077,7 +1104,7 @@
     var oy = yGeral + headerH + topPad;
     ops.forEach(function (o) { o.fn(oy); oy += o.h; });
 
-    var footerY = fitFooterToContent ? (Math.max(yLeft, yGeral + bandH) + 7) : 289;
+    var footerY = fitFooterToContent ? (yGeral + bandH + 7) : 289;
     doc.setFont('helvetica', 'italic'); doc.setFontSize(7); doc.setTextColor(150, 150, 150);
     doc.text('Gerado em ' + new Date().toLocaleString('pt-BR'), marginX, footerY);
     var bankNames = ofxImportLog.map(function (e) { return e.bank; }).filter(function (v, i, a) { return a.indexOf(v) === i; });
@@ -1205,10 +1232,13 @@
       ln.wrapped.forEach(function (wline, i) { doc.text(wline, x + padX + ln.indent, ly + i * ln.lh); });
       if (ln.value !== '') doc.text(String(ln.value), x + w - padX, ly, { align: 'right' });
       var nxtLn = lines[lines.indexOf(ln) + 1];
-      if (ln.item && nxtLn && nxtLn.item) {
-        var sepY = ly + (Math.max(1, ln.wrapped.length) - 1) * ln.lh + 1.55;
+      if (nxtLn) {
+        var lastBase = ly + (Math.max(1, ln.wrapped.length) - 1) * ln.lh;
+        var nextBase = lastBase + ln.lh + nxtLn.gap;
+        var capNext = (nxtLn.muted ? 7.2 : (nxtLn.bold ? 8.9 : 8.5)) * 0.3528 * 0.72;
+        var sepY = ((lastBase + 0.6) + (nextBase - capNext)) / 2;
         doc.setDrawColor(226, 226, 226); doc.setLineWidth(0.15);
-        doc.line(x + padX + ln.indent, sepY, x + w - padX, sepY);
+        doc.line(x + padX + Math.min(ln.indent, nxtLn.indent), sepY, x + w - padX, sepY);
       }
       ly += Math.max(1, ln.wrapped.length) * ln.lh;
     });
@@ -1320,19 +1350,6 @@
     }
 
     saidasBox('SAÍDAS PREVISTAS DO BANCO', false, collect(state.values.b_boletos_dda, state.sublists.b_outros_pag_prev), state.totals.b_total_saidas_previstas);
-    var cofreRows = collect(0, state.sublists.c_outros_pag_prev);
-    if (cofreRows.length) saidasBox('SAÍDAS PREVISTAS DO COFRE', true, cofreRows, state.totals.c_total_saidas_previstas);
-
-    var depTop = y;
-    boxTop('DEPÓSITOS PREVISTOS', false);
-    y += headerH + 9;
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(13.5); doc.setTextColor(20, 20, 20);
-    doc.text('Total a ser depositado', textL, y);
-    doc.text(fmt(state.totals.b_deposito_previsto_total), textR, y, { align: 'right' });
-    y += 5;
-    boxOutline(depTop, false);
-    y += 8;
-
     var obsTop = y;
     boxTop('OBSERVAÇÕES', false);
     y += headerH + 8;
@@ -1345,6 +1362,20 @@
     });
     y += 1;
     boxOutline(obsTop, false);
+    y += 8;
+
+    var cofreRows = collect(0, state.sublists.c_outros_pag_prev);
+    if (cofreRows.length) saidasBox('SAÍDAS PREVISTAS DO COFRE', true, cofreRows, state.totals.c_total_saidas_previstas);
+
+    var depTop = y;
+    boxTop('DEPÓSITOS PREVISTOS', false);
+    y += headerH + 9;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(13.5); doc.setTextColor(20, 20, 20);
+    doc.text('Total a ser depositado', textL, y);
+    doc.text(fmt(state.totals.b_deposito_previsto_total), textR, y, { align: 'right' });
+    y += 5;
+    boxOutline(depTop, false);
+
 
     var footerY = fitFooterToContent ? (y + 8) : 289;
     doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(150, 150, 150);
@@ -1624,6 +1655,7 @@
     var has = function (s) { return d.indexOf(s) !== -1; };
     if (isEntrada) {
       if (has('DEP') || has('DEPOSITO') || has('DEPÓSITO')) return 'b_depositos';
+      if (has('RECEBIMENTO') && has('PIX') && has('BOLT')) return 'b_e_pix';
       if (has('PIX') && has('CIELO')) return 'b_e_pix';
       if (has('PIX') && has('REDE')) return 'b_e_pix';
       if (has('CIELO')) return 'b_e_cielo';
@@ -1636,6 +1668,7 @@
       if (has('PIX')) return 'b_e_pix';
       return 'outras_entradas';
     } else {
+      if (has('SEFAZ') || has('ICMS') || has('RECEITA FEDERAL') || has('IMPOSTOS') || has('IMPOSTO')) return 'b_s_impostos';
       if (has('BOLETO')) return 'b_boletos_dda_pago';
       if (has('PIX') && (has('DEVOLUCAO') || has('DEVOLUÇÃO') || has('ESTORNO'))) return 'b_s_devolucoes';
       if (has('DEB') && has('FATURA')) return 'b_s_cartao_empresarial';
@@ -1818,6 +1851,68 @@
     window.addEventListener('resize', function () { if (catActive) catClose(true); });
   }
 
+  var ofxMode = 'file';
+  function ofxSetMode(mode) {
+    ofxMode = mode;
+    document.querySelectorAll('.ofx-mode-btn').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-mode') === mode); });
+    document.getElementById('ofx-file-field').hidden = mode !== 'file';
+    document.getElementById('btn-ofx-add-file').hidden = mode !== 'file';
+    document.getElementById('ofx-manual-ant-field').hidden = mode !== 'manual';
+    document.getElementById('ofx-manual-fin-field').hidden = mode !== 'manual';
+    document.getElementById('ofx-hint').textContent = mode === 'manual'
+      ? 'Use quando o banco não gera o arquivo OFX por falta de movimentações. Informe apenas o saldo anterior; o saldo final é igual, pois não houve movimentações.'
+      : 'Selecione o banco e o arquivo exportado do internet banking. Um extrato por vez.';
+    document.getElementById('btn-ofx-apply').disabled = mode === 'file' ? !ofxTxns.length : false;
+    ofxSetStatus('', '');
+  }
+  function ofxSyncManualFinal() {
+    var ant = document.getElementById('ofx-manual-ant'), fin = document.getElementById('ofx-manual-fin');
+    var neg = ant.dataset.sign === '-1';
+    fin.value = ant.value;
+    if (neg) fin.dataset.sign = '-1'; else delete fin.dataset.sign;
+    var t = document.querySelector('.sign-toggle[data-target="ofx-manual-fin"]');
+    if (t) { t.textContent = neg ? '\u2212' : '+'; t.classList.toggle('negative', neg); }
+  }
+  function ofxClearManual() {
+    ['ofx-manual-ant', 'ofx-manual-fin'].forEach(function (id) {
+      var el = document.getElementById(id);
+      el.value = ''; delete el.dataset.sign;
+      var t = document.querySelector('.sign-toggle[data-target="' + id + '"]');
+      if (t) { t.textContent = '+'; t.classList.remove('negative'); }
+    });
+  }
+  function ofxAddToBankSaldoInicial(siVal) {
+    var bSaldoEl = document.getElementById('b_saldo_inicial');
+    var newSigned = numSigned('b_saldo_inicial') + siVal;
+    bSaldoEl.value = formatMasked(Math.abs(newSigned));
+    bSaldoEl.dataset.sign = newSigned < 0 ? '-1' : '1';
+    var bSaldoToggle = document.querySelector('.sign-toggle[data-target="b_saldo_inicial"]');
+    if (bSaldoToggle) {
+      bSaldoToggle.textContent = newSigned < 0 ? '\u2212' : '+';
+      bSaldoToggle.classList.toggle('negative', newSigned < 0);
+    }
+  }
+  function ofxApplyManual() {
+    var bankId = document.getElementById('ofx-bank-select').value;
+    if (ofxImportLog.some(function (e) { return e.bankId === bankId; })) {
+      ofxSetStatus('Já foi importado um extrato de ' + ofxBankLabel(bankId) + ' nesta sessão. Limpe o formulário para importar novamente.', 'error');
+      return;
+    }
+    if (document.getElementById('ofx-manual-ant').value.trim() === '') {
+      ofxSetStatus('Informe o saldo anterior.', 'error');
+      return;
+    }
+    var ant = numSigned('ofx-manual-ant'), fin = ant;
+    ofxAddToBankSaldoInicial(ant);
+    var antDate = (document.getElementById('data-anterior').value || todayStr()).replace(/-/g, '');
+    ofxImportLog.push({ date: antDate, bank: ofxBankLabel(bankId), bankId: bankId, saldoInicial: ant, entradas: 0, saidas: 0, saldoFinal: fin, manual: true });
+    renderImportLog();
+    ofxResetImport();
+    recalc(); saveDraft();
+    goToStep(2);
+    setStatus('Extrato manual de ' + ofxBankLabel(bankId) + ' (sem movimentações) adicionado ao formulário.', 'success');
+  }
+
   function ofxResetImport() {
     ofxTxns = []; ofxSeenKeys = {};
     ofxCurrentBankId = null; ofxCurrentMeta = null;
@@ -1825,7 +1920,8 @@
     document.getElementById('ofx-summary-area').innerHTML = '';
     document.getElementById('ofx-file-input').value = '';
     document.getElementById('ofx-upload-area').style.display = '';
-    ofxSetStatus('', '');
+    ofxClearManual();
+    ofxSetMode('file');
   }
 
   function renderImportLog() {
@@ -1837,7 +1933,7 @@
     tbody.innerHTML = ofxImportLog.map(function (e) {
       return '<tr>' +
         '<td>' + ofxFormatDateBr(e.date) + '</td>' +
-        '<td>' + escapeHtml(e.bank) + '</td>' +
+        '<td>' + escapeHtml(e.bank) + (e.manual ? ' <span class="import-log-manual">(manual)</span>' : '') + '</td>' +
         '<td>' + (e.saldoInicial != null ? fmt(e.saldoInicial) : '\u2013') + '</td>' +
         '<td>' + (e.saldoFinal != null ? fmt(e.saldoFinal) : '\u2013') + '</td>' +
         '</tr>';
@@ -1906,7 +2002,17 @@
       goToStep(2);
     });
 
+    var manualAntField = document.getElementById('ofx-manual-ant-field');
+    manualAntField.addEventListener('input', ofxSyncManualFinal);
+    manualAntField.addEventListener('click', function () { setTimeout(ofxSyncManualFinal, 0); });
+
+    document.getElementById('ofx-mode-switch').addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('.ofx-mode-btn') : null;
+      if (b) ofxSetMode(b.getAttribute('data-mode'));
+    });
+
     document.getElementById('btn-ofx-apply').addEventListener('click', function () {
+      if (ofxMode === 'manual') { ofxApplyManual(); return; }
       ofxSyncDestsFromDom();
       var sums = {};
       ofxTxns.forEach(function (t) {
@@ -1925,15 +2031,7 @@
       var siInput = document.getElementById('ofx-saldo-inicial-input');
       var siSign = siInput.dataset.sign === '-1' ? -1 : 1;
       var siVal = (parseBr(siInput.value) || 0) * siSign;
-      var bSaldoEl = document.getElementById('b_saldo_inicial');
-      var newSigned = numSigned('b_saldo_inicial') + siVal;
-      bSaldoEl.value = formatMasked(Math.abs(newSigned));
-      bSaldoEl.dataset.sign = newSigned < 0 ? '-1' : '1';
-      var bSaldoToggle = document.querySelector('.sign-toggle[data-target="b_saldo_inicial"]');
-      if (bSaldoToggle) {
-        bSaldoToggle.textContent = newSigned < 0 ? '\u2212' : '+';
-        bSaldoToggle.classList.toggle('negative', newSigned < 0);
-      }
+      ofxAddToBankSaldoInicial(siVal);
 
       var entradas = 0, saidas = 0;
       ofxTxns.forEach(function (t) {
