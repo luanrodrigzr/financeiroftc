@@ -1730,7 +1730,7 @@
     if (meta.ledgerMismatch) {
       html += '<div class="ofx-ledger-warning">O extrato traz o saldo em ' + (ofxFormatDateBr(meta.ledgerDate) || 'outra data') +
         ', um dia diferente do período das transações (' + (ofxFormatDateBr(meta.date) || '-') +
-        '). Esse saldo não corresponde ao fim do dia do extrato, então não foi usado — informe o saldo inicial manualmente.</div>';
+        '). Esse saldo não corresponde ao fim do dia do extrato, então não foi usado — informe o saldo inicial manualmente; o saldo final é calculado a partir dele.</div>';
     }
     html += '<div class="ofx-saldo-row">' +
       '<span class="ofx-saldo-label">Saldo inicial do extrato</span>' +
@@ -1759,6 +1759,12 @@
         '<span class="ofx-saldo-value-readonly">' + fmt(meta.ledgerBal) + '</span>' +
         '<span class="ofx-saldo-dest">(informativo)</span>' +
         '</div>';
+    } else {
+      html += '<div class="ofx-saldo-row">' +
+        '<span class="ofx-saldo-label">Saldo final do extrato</span>' +
+        '<span class="ofx-saldo-value-readonly" id="ofx-saldo-final-computed">' + dynamicSignedFmt(entradas - saidas) + '</span>' +
+        '<span class="ofx-saldo-dest">(calculado: saldo inicial + entradas − saídas)</span>' +
+        '</div>';
     }
     html += '</div>';
     area.innerHTML = html;
@@ -1769,6 +1775,15 @@
       siInput.dataset.sign = saldoInicialCalc < 0 ? '-1' : '1';
     } else {
       attachMoneyMask(siInput);
+      var finalEl = document.getElementById('ofx-saldo-final-computed');
+      var updateFinal = function () {
+        var sign = siInput.dataset.sign === '-1' ? -1 : 1;
+        var si = (parseBr(siInput.value) || 0) * sign;
+        finalEl.textContent = dynamicSignedFmt(si + entradas - saidas);
+      };
+      siInput.addEventListener('input', updateFinal);
+      var signBtn = document.getElementById('ofx-saldo-inicial-sign');
+      if (signBtn) signBtn.addEventListener('click', function () { setTimeout(updateFinal, 0); });
     }
     ofxUpdateSummary();
   }
