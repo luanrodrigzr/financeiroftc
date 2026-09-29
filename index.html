@@ -1615,6 +1615,7 @@
     var body = idx >= 0 ? raw.slice(idx) : raw;
     var lines = body.split(/\r\n|\r|\n/);
     var out = [];
+    function esc(s) { return s.replace(/&(?!amp;|lt;|gt;|quot;|apos;|#\d+;)/g, '&amp;'); }
     for (var i = 0; i < lines.length; i++) {
       var line = lines[i].trim();
       if (!line) continue;
@@ -1623,9 +1624,9 @@
       if (m) {
         var tag = m[1], rest = m[2];
         if (rest === '') { out.push('<' + tag + '>'); continue; }
-        if (/<\/[A-Za-z0-9.]+>$/.test(rest)) { out.push(line); continue; }
-        var val = rest.replace(/&(?!amp;|lt;|gt;|quot;|apos;|#\d+;)/g, '&amp;');
-        out.push('<' + tag + '>' + val + '</' + tag + '>');
+        var closeMatch = rest.match(/^([\s\S]*)<\/([A-Za-z0-9.]+)>$/);
+        if (closeMatch) { out.push('<' + tag + '>' + esc(closeMatch[1]) + '</' + closeMatch[2] + '>'); continue; }
+        out.push('<' + tag + '>' + esc(rest) + '</' + tag + '>');
       } else {
         out.push(line);
       }
