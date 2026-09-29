@@ -273,6 +273,7 @@
   .ofx-saldo-value-readonly { font-size: 1rem; font-weight: bold; text-align: right; }
   .ofx-saldo-dest { font-size: 0.78rem; color: var(--muted); }
   #ofx-date-warning { color: var(--wine); font-size: 0.85rem; font-weight: bold; margin-top: 8px; }
+  .ofx-ledger-warning { background: #fff4e5; color: #8a5300; font-size: 0.82rem; padding: 9px 12px; border-bottom: 1px solid var(--border); }
   @media (max-width: 640px) {
     .ofx-saldo-row { grid-template-columns: 1fr; gap: 3px; }
     .ofx-saldo-label { grid-column: auto; }
@@ -1662,10 +1663,17 @@
     var doc = new DOMParser().parseFromString(xmlText, 'text/xml');
     function g(tag) { var n = doc.getElementsByTagName(tag)[0]; return n ? (n.textContent || '').trim() : ''; }
     var balAmt = g('BALAMT');
-    var dtAsOf = g('DTASOF') || g('DTEND') || g('DTSERVER');
+    var dtAsOf = g('DTASOF');
+    var dtPeriod = g('DTEND') || g('DTSTART');
+    var periodDate = (dtPeriod || dtAsOf || g('DTSERVER') || '').slice(0, 8);
+    var asOfDate = dtAsOf ? dtAsOf.slice(0, 8) : '';
+    var mismatch = !!(asOfDate && dtPeriod && asOfDate !== periodDate);
+    var hasBal = balAmt !== '' && !isNaN(parseFloat(balAmt));
     return {
-      ledgerBal: balAmt !== '' && !isNaN(parseFloat(balAmt)) ? parseFloat(balAmt) : null,
-      date: dtAsOf ? dtAsOf.slice(0, 8) : ''
+      ledgerBal: (hasBal && !mismatch) ? parseFloat(balAmt) : null,
+      date: periodDate,
+      ledgerMismatch: mismatch,
+      ledgerDate: asOfDate
     };
   }
 
@@ -1719,6 +1727,11 @@
     var saldoInicialCalc = hasLedger ? (meta.ledgerBal - entradas + saidas) : null;
 
     var html = '<div class="ofx-table">';
+    if (meta.ledgerMismatch) {
+      html += '<div class="ofx-ledger-warning">O extrato traz o saldo em ' + (ofxFormatDateBr(meta.ledgerDate) || 'outra data') +
+        ', um dia diferente do período das transações (' + (ofxFormatDateBr(meta.date) || '-') +
+        '). Esse saldo não corresponde ao fim do dia do extrato, então não foi usado — informe o saldo inicial manualmente.</div>';
+    }
     html += '<div class="ofx-saldo-row">' +
       '<span class="ofx-saldo-label">Saldo inicial do extrato</span>' +
       '<div class="ofx-saldo-value-wrap">' +
