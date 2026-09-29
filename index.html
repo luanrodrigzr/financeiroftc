@@ -333,18 +333,24 @@
   }
   .import-log-table-wrap { overflow-x: auto; }
   .import-log-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 0.82rem; }
-  .import-log-table th, .import-log-table td { padding: 5px 8px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .import-log-table th:nth-child(1), .import-log-table td:nth-child(1) { width: 22%; }
-  .import-log-table th:nth-child(2), .import-log-table td:nth-child(2) { width: 28%; }
-  .import-log-table th:nth-child(3), .import-log-table td:nth-child(3),
-  .import-log-table th:nth-child(4), .import-log-table td:nth-child(4) { width: 25%; }
-  .import-log-table th:first-child, .import-log-table td:first-child,
-  .import-log-table th:nth-child(2), .import-log-table td:nth-child(2) { text-align: left; }
+  .import-log-table th, .import-log-table td { padding: 5px 6px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .import-log-table thead th { white-space: normal; line-height: 1.15; }
+  .import-log-table th:nth-child(1), .import-log-table td:nth-child(1) { width: 24px; padding-left: 0; padding-right: 0; }
+  .import-log-table th:nth-child(2), .import-log-table td:nth-child(2) { width: 23%; }
+  .import-log-table th:nth-child(3), .import-log-table td:nth-child(3) { width: 19%; }
+  .import-log-table th:nth-child(4), .import-log-table td:nth-child(4),
+  .import-log-table th:nth-child(5), .import-log-table td:nth-child(5) { width: 27%; }
+  .import-log-table th:nth-child(3), .import-log-table td:nth-child(3) { text-align: left; }
   .import-log-table thead th { font-size: 0.72rem; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
   .import-log-table tbody tr { border-bottom: 1px solid var(--border); }
   .import-log-table tbody tr:last-child { border-bottom: none; }
   .import-log-empty { color: var(--muted); font-style: italic; text-align: left !important; padding: 10px !important; }
   .import-log-footer { display: flex; justify-content: flex-end; margin-top: 10px; }
+  .import-log-remove-cell { text-align: center !important; }
+  .import-log-remove-btn {
+    border: 1px solid var(--border); background: transparent; color: var(--pink); font-size: 0.9rem; line-height: 1;
+    width: 20px; height: 20px; border-radius: 5px; cursor: pointer; padding: 0;
+  }
 
   button.confirm-pending { background: var(--pink); color: #fff; border-color: var(--pink); }
 </style>
@@ -405,7 +411,7 @@
         <div class="box-body" id="import-log-body">
           <div class="import-log-table-wrap">
             <table class="import-log-table">
-              <thead><tr><th>Data</th><th>Banco</th><th>Saldo inicial</th><th>Saldo final</th></tr></thead>
+              <thead><tr><th></th><th>Data</th><th>Banco</th><th>Saldo inicial</th><th>Saldo final</th></tr></thead>
               <tbody id="import-log-tbody"></tbody>
             </table>
           </div>
@@ -801,7 +807,7 @@
   }
 
   // ================= Dynamic sub-lists =================
-  function addSubRow(listId, desc, val, locked) {
+  function addSubRow(listId, desc, val, locked, importUid) {
     var list = document.getElementById(listId + '-list');
     var importOnly = IMPORT_ONLY_SUBLISTS.indexOf(listId) !== -1;
     if (importOnly) locked = true;
@@ -817,6 +823,7 @@
     if (val) valEl.value = formatMasked(val);
     if (locked) { row.dataset.locked = '1'; row.classList.add('sub-row-locked'); }
     else { attachMoneyMask(valEl); }
+    if (importUid) row.dataset.importUid = importUid;
     var removeBtn = row.querySelector('.remove-btn');
     if (removeBtn) removeBtn.addEventListener('click', function () { row.remove(); recalc(); saveDraft(); });
     row.querySelectorAll('input').forEach(function (inp) {
@@ -831,7 +838,8 @@
       out.push({
         desc: r.querySelector('.desc-input').value.trim(),
         val: parseBr(r.querySelector('.value-input').value),
-        locked: r.dataset.locked === '1'
+        locked: r.dataset.locked === '1',
+        importUid: r.dataset.importUid || null
       });
     });
     return out;
@@ -991,7 +999,7 @@
         if (el && d.values[k]) el.value = formatMasked(d.values[k]);
       });
       ALL_SUBLIST_IDS.forEach(function (id) {
-        (d.sublists && d.sublists[id] || []).forEach(function (it) { addSubRow(id, it.desc, it.val, it.locked); });
+        (d.sublists && d.sublists[id] || []).forEach(function (it) { addSubRow(id, it.desc, it.val, it.locked, it.importUid); });
       });
       (d.hidden || []).forEach(function (fid) {
         var row = document.getElementById(fid + '-row');
@@ -1716,6 +1724,7 @@
 
   var ofxCurrentBankId = null;
   var ofxCurrentMeta = null;
+  var ofxImportSeq = 0;
 
   function ofxRenderTable() {
     var area = document.getElementById('ofx-transactions-area');
@@ -1963,7 +1972,7 @@
     var ant = numSigned('ofx-manual-ant'), fin = ant;
     ofxAddToBankSaldoInicial(ant);
     var antDate = (document.getElementById('data-anterior').value || todayStr()).replace(/-/g, '');
-    ofxImportLog.push({ date: antDate, bank: ofxBankLabel(bankId), bankId: bankId, saldoInicial: ant, entradas: 0, saidas: 0, saldoFinal: fin, manual: true });
+    ofxImportLog.push({ uid: 'imp' + (++ofxImportSeq), date: antDate, bank: ofxBankLabel(bankId), bankId: bankId, saldoInicial: ant, entradas: 0, saidas: 0, saldoFinal: fin, manual: true, fieldSums: {} });
     renderImportLog();
     ofxResetImport();
     recalc(); saveDraft();
@@ -1982,14 +1991,42 @@
     ofxSetMode('file');
   }
 
+  function ofxRemoveImportEntry(idx) {
+    var entry = ofxImportLog[idx];
+    if (!entry) return;
+    Object.keys(entry.fieldSums || {}).forEach(function (fid) {
+      var el = document.getElementById(fid);
+      if (!el) return;
+      var next = Math.round(((parseBr(el.value) || 0) - entry.fieldSums[fid]) * 100) / 100;
+      el.value = formatMasked(Math.max(0, next));
+    });
+    if (entry.uid) {
+      document.querySelectorAll('.sub-row[data-import-uid="' + entry.uid + '"]').forEach(function (row) { row.remove(); });
+    }
+    var bSaldoEl = document.getElementById('b_saldo_inicial');
+    var newSigned = Math.round((numSigned('b_saldo_inicial') - (entry.saldoInicial || 0)) * 100) / 100;
+    bSaldoEl.value = formatMasked(Math.abs(newSigned));
+    bSaldoEl.dataset.sign = newSigned < 0 ? '-1' : '1';
+    var bSaldoToggle = document.querySelector('.sign-toggle[data-target="b_saldo_inicial"]');
+    if (bSaldoToggle) {
+      bSaldoToggle.textContent = newSigned < 0 ? '\u2212' : '+';
+      bSaldoToggle.classList.toggle('negative', newSigned < 0);
+    }
+    ofxImportLog.splice(idx, 1);
+    renderImportLog();
+    recalc(); saveDraft();
+    setStatus('Extrato de ' + entry.bank + ' removido do formulário.', 'success');
+  }
+
   function renderImportLog() {
     var tbody = document.getElementById('import-log-tbody');
     if (!ofxImportLog.length) {
-      tbody.innerHTML = '<tr><td colspan="4" class="import-log-empty">Nenhum extrato importado ainda.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="import-log-empty">Nenhum extrato importado ainda.</td></tr>';
       return;
     }
-    tbody.innerHTML = ofxImportLog.map(function (e) {
+    tbody.innerHTML = ofxImportLog.map(function (e, i) {
       return '<tr>' +
+        '<td class="import-log-remove-cell"><button type="button" class="remove-btn import-log-remove-btn" data-idx="' + i + '" title="Remover este extrato e desfazer os valores somados" aria-label="Remover extrato">\u00D7</button></td>' +
         '<td>' + ofxFormatDateBr(e.date) + '</td>' +
         '<td>' + escapeHtml(e.bank) + (e.manual ? ' <span class="import-log-manual">(manual)</span>' : '') + '</td>' +
         '<td>' + (e.saldoInicial != null ? fmt(e.saldoInicial) : '\u2013') + '</td>' +
@@ -2004,6 +2041,23 @@
       var collapsed = body.style.display === 'none';
       body.style.display = collapsed ? '' : 'none';
       this.textContent = collapsed ? '\u2212' : '+';
+    });
+
+    document.getElementById('import-log-tbody').addEventListener('click', function (e) {
+      var btn = e.target.closest ? e.target.closest('.import-log-remove-btn') : null;
+      if (!btn) return;
+      var idx = parseInt(btn.getAttribute('data-idx'), 10);
+      if (!btn.classList.contains('confirm-pending')) {
+        btn.classList.add('confirm-pending');
+        btn.title = 'Clique de novo para confirmar a remoção';
+        btn._confirmTimeout = setTimeout(function () {
+          btn.classList.remove('confirm-pending');
+          btn.title = 'Remover este extrato e desfazer os valores somados';
+        }, 4000);
+        return;
+      }
+      clearTimeout(btn._confirmTimeout);
+      ofxRemoveImportEntry(idx);
     });
 
     document.getElementById('btn-open-ofx-import').addEventListener('click', function () {
@@ -2072,6 +2126,7 @@
     document.getElementById('btn-ofx-apply').addEventListener('click', function () {
       if (ofxMode === 'manual') { ofxApplyManual(); return; }
       ofxSyncDestsFromDom();
+      var uid = 'imp' + (++ofxImportSeq);
       var sums = {};
       ofxTxns.forEach(function (t) {
         if (t.dest === 'ignore' || t.dest === 'outras_entradas' || t.dest === 'outras_saidas') return;
@@ -2082,8 +2137,8 @@
         if (el) el.value = formatMasked((parseBr(el.value) || 0) + sums[fid]);
       });
       ofxTxns.forEach(function (t) {
-        if (t.dest === 'outras_entradas') addSubRow('b_outras_entradas', t.desc, Math.abs(t.amount), true);
-        if (t.dest === 'outras_saidas') addSubRow('b_outras_saidas', t.desc, Math.abs(t.amount), true);
+        if (t.dest === 'outras_entradas') addSubRow('b_outras_entradas', t.desc, Math.abs(t.amount), true, uid);
+        if (t.dest === 'outras_saidas') addSubRow('b_outras_saidas', t.desc, Math.abs(t.amount), true, uid);
       });
 
       var siInput = document.getElementById('ofx-saldo-inicial-input');
@@ -2097,11 +2152,14 @@
         if (t.amount >= 0) entradas += t.amount; else saidas += Math.abs(t.amount);
       });
       var meta = ofxCurrentMeta || {};
+      var hasLedgerFinal = typeof meta.ledgerBal === 'number';
       ofxImportLog.push({
+        uid: uid,
         date: meta.date || todayStr(),
         bank: ofxBankLabel(ofxCurrentBankId), bankId: ofxCurrentBankId,
         saldoInicial: siVal, entradas: entradas, saidas: saidas,
-        saldoFinal: (typeof meta.ledgerBal === 'number') ? meta.ledgerBal : null
+        saldoFinal: hasLedgerFinal ? meta.ledgerBal : (siVal + entradas - saidas),
+        fieldSums: sums
       });
       renderImportLog();
 
