@@ -1289,7 +1289,7 @@
     var valueRightX = checkboxX - 8;
     var headerH = 7;
 
-    var afterHeaderY = pdfHeader(doc, marginL, 'Relatório de contas a pagar', null, state.loja, pageW, state.dataAnterior);
+    var afterHeaderY = pdfHeader(doc, marginL, 'Relatório de contas a pagar', null, state.loja, pageW, state.dataHoje);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10.5); doc.setTextColor(90, 90, 90);
     doc.text('Data: ' + (formatDateBr(state.dataHoje) || '-'), marginL, afterHeaderY);
 
@@ -1567,7 +1567,7 @@
     var el = document.getElementById('status-msg');
     el.textContent = msg; el.className = kind || '';
     if (statusTimer) clearTimeout(statusTimer);
-    if (msg) statusTimer = setTimeout(function () { el.textContent = ''; el.className = ''; }, 5000);
+    if (msg && kind !== 'error') statusTimer = setTimeout(function () { el.textContent = ''; el.className = ''; }, 5000);
   }
 
   function goToStep(n) {
@@ -1607,7 +1607,7 @@
     var el = document.getElementById('ofx-status-msg');
     el.textContent = msg; el.className = kind || '';
     if (ofxStatusTimer) clearTimeout(ofxStatusTimer);
-    if (msg) ofxStatusTimer = setTimeout(function () { el.textContent = ''; el.className = ''; }, 5000);
+    if (msg && kind !== 'error') ofxStatusTimer = setTimeout(function () { el.textContent = ''; el.className = ''; }, 5000);
   }
 
   function ofxFormatDateBr(yyyymmdd) {
