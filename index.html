@@ -685,11 +685,17 @@
   }
   function titleCaseIfAllCaps(s) {
     s = String(s || '');
-    if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(s)) return s;
-    if (s !== s.toUpperCase()) return s;
-    return s.toLowerCase().replace(/(^|[\s\-\/(])([a-zà-öø-ÿ])/g, function (m, sep, ch) {
-      return sep + ch.toUpperCase();
-    });
+    return s.split(' ').map(function (word) {
+      var letters = word.match(/[A-Za-zÀ-ÖØ-öø-ÿ]/g);
+      if (!letters) return word;
+      var lettersStr = letters.join('');
+      if (lettersStr !== lettersStr.toUpperCase()) return word;
+      var lowered = word.toLowerCase();
+      if (letters.length <= 1) return lowered;
+      return lowered.replace(/(^|[\-\/_(.])([a-zà-öø-ÿ])/g, function (m, sep, ch) {
+        return sep + ch.toUpperCase();
+      });
+    }).join(' ');
   }
   function escapeHtml(s) {
     return String(s || '').replace(/[&<>"']/g, function (c) {
