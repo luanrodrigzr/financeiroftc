@@ -683,6 +683,14 @@
     var p = iso.split('-');
     return p.length === 3 ? (p[2] + '/' + p[1] + '/' + p[0]) : iso;
   }
+  function titleCaseIfAllCaps(s) {
+    s = String(s || '');
+    if (!/[A-Za-zÀ-ÖØ-öø-ÿ]/.test(s)) return s;
+    if (s !== s.toUpperCase()) return s;
+    return s.toLowerCase().replace(/(^|[\s\-\/(])([a-zà-öø-ÿ])/g, function (m, sep, ch) {
+      return sep + ch.toUpperCase();
+    });
+  }
   function escapeHtml(s) {
     return String(s || '').replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -1131,7 +1139,7 @@
     var bankNames = ofxImportLog.filter(function (e) { return !e.manual; }).map(function (e) { return e.bank; })
       .filter(function (v, i, a) { return a.indexOf(v) === i; });
     if (bankNames.length === 1) {
-      doc.text('Fontes: Extrato bancário do banco ' + bankNames[0], marginX, footerY + 4);
+      doc.text('Fonte: Extrato bancário do banco ' + bankNames[0], marginX, footerY + 4);
     } else if (bankNames.length > 1) {
       var bankList = bankNames.slice(0, -1).join(', ') + ' e ' + bankNames[bankNames.length - 1];
       doc.text('Fontes: Extratos bancários dos bancos ' + bankList, marginX, footerY + 4);
@@ -1189,7 +1197,7 @@
         var realItems = sl.items.filter(function (it) { return it.desc !== '' || it.val !== 0; });
         if (realItems.length) {
           pushRow(box.sublist.title + ':', '', { bold: true });
-          realItems.forEach(function (it) { pushRow(it.desc || '(sem descrição)', fmt(it.val), { indent: 3, item: true }); });
+          realItems.forEach(function (it) { pushRow(titleCaseIfAllCaps(it.desc) || '(sem descrição)', fmt(it.val), { indent: 3, item: true }); });
         }
       }
       pushRow(box.totalLabel, fmt(state.totals[box.totalId]), { bold: true, negative: state.totals[box.totalId] < 0 });
@@ -1506,8 +1514,8 @@
       },
       addPage: function () { /* single continuous image — no real page breaks */ },
       _finish: function () {
-        var pad = 10;
-        var usedH = Math.min(ceilingHmm, usedMaxY + pad);
+        var pad = 10, a4Hmm = 297;
+        var usedH = Math.max(a4Hmm, Math.min(ceilingHmm, usedMaxY + pad));
         var out = document.createElement('canvas');
         out.width = canvas.width;
         out.height = Math.max(1, Math.round(usedH * scale));
@@ -1643,11 +1651,16 @@
     return '<OFXROOT>' + out.join('') + '</OFXROOT>';
   }
 
+  function ofxIsBalanceMarker(desc) {
+    var norm = String(desc || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+    return /^\s*SALDO\b/.test(norm);
+  }
   function ofxParseTransactions(xmlText) {
     var doc = new DOMParser().parseFromString(xmlText, 'text/xml');
     if (doc.getElementsByTagName('parsererror').length) return null;
     var nodes = doc.getElementsByTagName('STMTTRN');
     var out = [];
+    var skippedBalanceMarkers = 0;
     for (var i = 0; i < nodes.length; i++) {
       var el = nodes[i];
       var g = function (tag) { var n = el.getElementsByTagName(tag)[0]; return n ? (n.textContent || '').trim() : ''; };
@@ -1657,13 +1670,16 @@
       var memo = g('MEMO');
       var desc = name;
       if (memo && memo !== name) desc = desc ? desc + ' - ' + memo : memo;
+      desc = desc || '(sem descrição)';
+      if (ofxIsBalanceMarker(desc)) { skippedBalanceMarkers++; continue; }
       out.push({
         date: g('DTPOSTED').slice(0, 8),
-        desc: desc || '(sem descrição)',
+        desc: desc,
         amount: amt,
         fitid: g('FITID')
       });
     }
+    out.skippedBalanceMarkers = skippedBalanceMarkers;
     return out;
   }
 
@@ -2079,7 +2095,8 @@
         var text = await ofxReadFileText(file);
         var xmlText = ofxToXmlText(text);
         var txns = ofxParseTransactions(xmlText);
-        if (!txns || !txns.length) { ofxSetStatus('Nenhum lançamento encontrado nesse arquivo.', 'error'); return; }
+        if (!txns || (!txns.length && !txns.skippedBalanceMarkers)) { ofxSetStatus('Nenhum lançamento encontrado nesse arquivo.', 'error'); return; }
+        if (!txns.length) { ofxSetStatus('Esse arquivo só traz marcadores de saldo (não transações) — nada para importar.', 'error'); return; }
         var meta = ofxParseStatementMeta(xmlText);
         ofxCurrentBankId = bankId;
         ofxCurrentMeta = meta;
@@ -2096,6 +2113,9 @@
         document.getElementById('ofx-upload-area').style.display = 'none';
 
         var msg = ofxTxns.length + ' lançamento(s) de ' + ofxBankLabel(bankId) + ' processado(s).';
+        if (txns.skippedBalanceMarkers) {
+          msg += ' (' + txns.skippedBalanceMarkers + ' marcador(es) de saldo ignorado(s), não são transações.)';
+        }
         var antDate = document.getElementById('data-anterior').value;
         var dateWarn = '';
         if (meta.date && antDate && meta.date !== antDate.replace(/-/g, '')) {
