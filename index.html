@@ -131,6 +131,8 @@
   .box.theme-pink .total-row.grand span { color: var(--pink); }
   .negative-value { color: var(--wine) !important; }
   .extra-row { padding: 2px 0; }
+  .bank-balance-lines { padding-top: 6px; }
+  .bank-balance-lines:empty { display: none; }
   .total-row.grand + .extra-row { padding-top: 8px; }
   .extra-row label, .extra-row span { color: var(--muted); font-weight: normal; font-size: 0.78rem; }
 
@@ -452,7 +454,7 @@
                 <input type="file" id="ofx-file-input" accept=".ofx,.qfx,text/plain">
               </div>
               <div class="field ofx-manual-field" id="ofx-manual-ant-field" hidden>
-                <label for="ofx-manual-ant">Saldo anterior</label>
+                <label for="ofx-manual-ant">Saldo anterior (inicial)</label>
                 <div class="ofx-manual-wrap">
                   <button type="button" class="sign-toggle" data-target="ofx-manual-ant">+</button>
                   <input type="text" inputmode="decimal" class="money-input" id="ofx-manual-ant" placeholder="0,00">
@@ -511,7 +513,8 @@
     { id: 'b_e_cashback', label: 'Cashback do Cartão de Todos' },
     { id: 'b_e_pix', label: 'Vendas no pix' },
     { id: 'b_e_repasse', label: 'Repasse de fornecedor' },
-    { id: 'b_depositos', label: 'Depósitos (do cofre)', fixed: true }
+    { id: 'b_depositos', label: 'Depósitos (do cofre)', fixed: true },
+    { id: 'b_transf_recebido', label: 'Total recebido', catLabel: 'Transferência entre contas', transfer: true }
   ];
   var BANK_SAIDA_CATS = [
     { id: 'b_boletos_dda_pago', label: 'Boletos (DDA)', fixed: true },
@@ -532,10 +535,12 @@
     { id: 'b_s_juros_iof', label: 'Juros e IOF' },
     { id: 'b_s_taxas_tarifas', label: 'Taxas e tarifas bancárias' },
     { id: 'b_s_cartao_empresarial', label: 'Cartão empresarial' },
-    { id: 'b_s_devolucoes', label: 'Devoluções de vendas' }
+    { id: 'b_s_devolucoes', label: 'Devoluções de vendas' },
+    { id: 'b_transf_enviado', label: 'Total enviado', catLabel: 'Transferência entre contas', transfer: true }
   ];
   function catsToFields(cats) {
-    return cats.map(function (c) { return { id: c.id, label: c.label, locked: true, dynamic: !c.fixed }; });
+    return cats.filter(function (c) { return !c.transfer; })
+      .map(function (c) { return { id: c.id, label: c.label, locked: true, dynamic: !c.fixed }; });
   }
 
   var CONFIG = {
@@ -560,11 +565,19 @@
           totalId: 'b_total_saidas', totalLabel: 'Total de saídas bancárias'
         },
         {
+          id: 'b-transferencias', type: 'normal', title: 'TRANSFERÊNCIAS', dateTag: 'anterior', formOnly: true,
+          fields: [
+            { id: 'b_transf_enviado', label: 'Total enviado', locked: true },
+            { id: 'b_transf_recebido', label: 'Total recebido', locked: true }
+          ]
+        },
+        {
           id: 'b-saldo-atual', type: 'saldo', title: 'SALDO ATUAL', dateTag: 'anterior', light: true,
           saldoInicialId: 'b_saldo_inicial',
           entradasRef: 'b_total_entradas', entradasLabel: 'Entradas bancárias',
           saidasRef: 'b_total_saidas', saidasLabel: 'Saídas bancárias',
-          totalId: 'b_saldo_atual', totalLabel: 'Saldo atual das contas'
+          totalId: 'b_saldo_atual', totalLabel: 'Saldo atual das contas',
+          bankBalances: true
         }
       ]
     },
@@ -643,6 +656,8 @@
   var ALL_BOXES = CONFIG.bancarias.boxes.concat(CONFIG.cofre.boxes).concat([STEP1_BOX, STEP1_COFRE_BOX, DEPOSITO_PREVISTO_BOX]);
   var ALL_SUBLIST_IDS = [];
   ALL_BOXES.forEach(function (b) { if (b.sublist) ALL_SUBLIST_IDS.push(b.sublist.id); });
+  var STEP1_SUBLIST_IDS = [STEP1_BOX, STEP1_COFRE_BOX, DEPOSITO_PREVISTO_BOX]
+    .filter(function (b) { return b.sublist; }).map(function (b) { return b.sublist.id; });
   var IMPORT_ONLY_SUBLISTS = ALL_BOXES.filter(function (b) { return b.sublist && b.sublist.importOnly; }).map(function (b) { return b.sublist.id; });
   var SALDO_INICIAL_IDS = ALL_BOXES.filter(function (b) { return b.type === 'saldoInicial'; }).map(function (b) { return b.fieldId; });
 
@@ -773,6 +788,7 @@
       (box.extras || []).forEach(function (ex) {
         body += '<div class="readonly-row extra-row' + (ex.bold ? ' bold' : '') + '"><label>' + ex.label + '</label><span id="' + ex.id + '-echo">R$ 0,00</span></div>';
       });
+      if (box.bankBalances) body += '<div class="bank-balance-lines" id="bank-balance-lines"></div>';
     } else if (box.type === 'previsto') {
       body += '<div class="readonly-row"><label>' + box.baseLabel + '</label><span id="' + box.baseRef + '-echo">R$ 0,00</span></div>';
       body += '<div class="readonly-row"><label>' + box.subLabel + '</label><span id="' + box.subRef + '-echo">R$ 0,00</span></div>';
@@ -783,7 +799,7 @@
     } else {
       (box.fields || []).forEach(function (f) { body += fieldRowHTML(f); });
       if (box.sublist) body += sublistHTML(box.sublist);
-      body += '<div class="total-row grand"><label>' + box.totalLabel + '</label><span id="' + box.totalId + '">R$ 0,00</span></div>';
+      if (box.totalId) body += '<div class="total-row grand"><label>' + box.totalLabel + '</label><span id="' + box.totalId + '">R$ 0,00</span></div>';
     }
     if (box.note) body += '<div class="box-note">' + escapeHtml(box.note) + '</div>';
     var cls = 'box theme-' + theme + (box.dashed ? ' box-dashed' : '') + (box.light ? ' header-light' : '');
@@ -926,6 +942,7 @@
       dataHoje: document.getElementById('data-hoje').value,
       obsContasPagar: document.getElementById('obs_contas_pagar').value.trim(),
       values: values, sublists: sublists, totals: totals,
+      bankBalances: ofxBankBalances(),
       hidden: currentHiddenIds()
     };
   }
@@ -1162,6 +1179,7 @@
     y += 9;
 
     cfg.boxes.forEach(function (box) {
+      if (box.formOnly) return;
       y = drawBox(doc, x, w, y, box, state, color, lightColor);
       y += 3;
     });
@@ -1186,6 +1204,9 @@
       (box.extras || []).forEach(function (ex) {
         pushRow(ex.label, ex.sign === '-' ? signedFmt('-', state.totals[ex.id]) : dynamicSignedFmt(state.totals[ex.id]), { muted: true, bold: !!ex.bold });
       });
+      if (box.bankBalances) {
+        (state.bankBalances || []).forEach(function (bb) { pushRow(bb.label, fmt(bb.value), { muted: true }); });
+      }
     } else if (box.type === 'previsto') {
       pushRow(box.baseLabel, signedFmt('+', state.totals[box.baseRef]));
       pushRow(box.subLabel, signedFmt(box.subSign || '-', state.totals[box.subRef]));
@@ -1204,7 +1225,7 @@
           realItems.forEach(function (it) { pushRow(titleCaseIfAllCaps(it.desc) || '(sem descrição)', fmt(it.val), { indent: 3, item: true }); });
         }
       }
-      pushRow(box.totalLabel, fmt(state.totals[box.totalId]), { bold: true, negative: state.totals[box.totalId] < 0 });
+      if (box.totalId) pushRow(box.totalLabel, fmt(state.totals[box.totalId]), { bold: true, negative: state.totals[box.totalId] < 0 });
     }
 
     var headerH = 6.2;
@@ -1598,12 +1619,14 @@
   ];
   function catDests(cats, extraId, extraLabel) {
     return cats.map(function (c) { return { id: c.id, label: c.catLabel || c.label }; })
-      .concat([{ id: extraId, label: extraLabel }, { id: 'ignore', label: 'Ignorar (não importar)' }]);
+      .concat([{ id: extraId, label: extraLabel }]);
   }
   var OFX_ENTRADA_DESTS = catDests(BANK_ENTRADA_CATS, 'outras_entradas', 'Outras entradas');
   var OFX_SAIDA_DESTS = catDests(BANK_SAIDA_CATS, 'outras_saidas', 'Outras saídas');
   var OFX_FIELD_LABELS = {};
   BANK_ENTRADA_CATS.concat(BANK_SAIDA_CATS).forEach(function (c) { OFX_FIELD_LABELS[c.id] = c.catLabel || c.label; });
+  OFX_FIELD_LABELS.b_transf_recebido = 'Transferência entre contas (recebido)';
+  OFX_FIELD_LABELS.b_transf_enviado = 'Transferência entre contas (enviado)';
   var ofxTxns = [];
   var ofxSeenKeys = {};
 
@@ -2036,7 +2059,20 @@
     setStatus('Extrato de ' + entry.bank + ' removido do formulário.', 'success');
   }
 
+  function ofxBankBalances() {
+    return ofxImportLog.filter(function (e) { return typeof e.saldoFinal === 'number'; })
+      .map(function (e) { return { label: 'Saldo do ' + e.bank, value: e.saldoFinal }; });
+  }
+  function renderBankBalanceLines() {
+    var box = document.getElementById('bank-balance-lines');
+    if (!box) return;
+    box.innerHTML = ofxBankBalances().map(function (bb) {
+      return '<div class="readonly-row extra-row"><label>' + escapeHtml(bb.label) + '</label><span>' + fmt(bb.value) + '</span></div>';
+    }).join('');
+  }
+
   function renderImportLog() {
+    renderBankBalanceLines();
     var tbody = document.getElementById('import-log-tbody');
     if (!ofxImportLog.length) {
       tbody.innerHTML = '<tr><td colspan="5" class="import-log-empty">Nenhum extrato importado ainda.</td></tr>';
@@ -2168,8 +2204,9 @@
       var siVal = (parseBr(siInput.value) || 0) * siSign;
       ofxAddToBankSaldoInicial(siVal);
 
-      var entradas = 0, saidas = 0;
+      var entradas = 0, saidas = 0, netAll = 0;
       ofxTxns.forEach(function (t) {
+        netAll += t.amount;
         if (t.dest === 'ignore') return;
         if (t.amount >= 0) entradas += t.amount; else saidas += Math.abs(t.amount);
       });
@@ -2180,7 +2217,7 @@
         date: meta.date || todayStr(),
         bank: ofxBankLabel(ofxCurrentBankId), bankId: ofxCurrentBankId,
         saldoInicial: siVal, entradas: entradas, saidas: saidas,
-        saldoFinal: hasLedgerFinal ? meta.ledgerBal : (siVal + entradas - saidas),
+        saldoFinal: hasLedgerFinal ? meta.ledgerBal : Math.round((siVal + netAll) * 100) / 100,
         fieldSums: sums
       });
       renderImportLog();
@@ -2271,7 +2308,7 @@
       if (e.target.matches('input, select, textarea')) { recalc(); saveDraft(); }
     });
 
-    function wireClearButton(btnId) {
+    function wireClearButton(btnId, scope) {
       var btn = document.getElementById(btnId);
       if (!btn) return;
       var timeoutId = null;
@@ -2289,35 +2326,48 @@
         clearTimeout(timeoutId);
         btn.classList.remove('confirm-pending');
         btn.textContent = btn.dataset.originalText;
-        performClear();
+        performClear(scope);
       });
     }
 
-    function performClear() {
-      document.querySelectorAll('.box input[type="text"]').forEach(function (i) { i.value = ''; });
-      document.getElementById('obs_contas_pagar').value = '';
-      document.querySelectorAll('.box .field-row').forEach(function (r) {
-        r.style.display = '';
-        var inp = r.querySelector('input'); if (inp) inp.disabled = false;
+    // Limpa só a tela em que o usuário está: 'step1' (contas a pagar) ou 'step2' (movimentações).
+    // Loja e datas ficam no cabeçalho, compartilhados pelas duas telas, e não são alterados.
+    function performClear(scope) {
+      var step1 = scope === 'step1';
+      var rootSelector = step1
+        ? '#step1-deposito-container, #step1-box-container, #step1-obs-container, #step1-cofre-container'
+        : '#col-bancarias, #col-cofre';
+      document.querySelectorAll(rootSelector).forEach(function (root) {
+        root.querySelectorAll('input[type="text"]').forEach(function (i) { i.value = ''; });
+        root.querySelectorAll('.field-row').forEach(function (r) {
+          r.style.display = '';
+          var inp = r.querySelector('input'); if (inp) inp.disabled = false;
+        });
       });
-      ALL_SUBLIST_IDS.forEach(function (id) { document.getElementById(id + '-list').innerHTML = ''; if (IMPORT_ONLY_SUBLISTS.indexOf(id) === -1) addSubRow(id); });
-      ofxImportLog = []; ofxCurrentBankId = null; ofxCurrentMeta = null;
-      renderImportLog();
-      SALDO_INICIAL_IDS.forEach(function (fid) {
-        var el = document.getElementById(fid);
-        if (el) delete el.dataset.sign;
-        var toggle = document.querySelector('.sign-toggle[data-target="' + fid + '"]');
-        if (toggle) { toggle.textContent = '+'; toggle.classList.remove('negative'); }
+      ALL_SUBLIST_IDS.forEach(function (id) {
+        if ((STEP1_SUBLIST_IDS.indexOf(id) !== -1) !== step1) return;
+        document.getElementById(id + '-list').innerHTML = '';
+        if (IMPORT_ONLY_SUBLISTS.indexOf(id) === -1) addSubRow(id);
       });
-      document.getElementById('data-anterior').value = yesterdayStr();
-      document.getElementById('data-hoje').value = todayStr();
-      updateDateTags(); recalc();
-      try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+      if (step1) {
+        document.getElementById('obs_contas_pagar').value = '';
+      } else {
+        ofxImportLog = []; ofxCurrentBankId = null; ofxCurrentMeta = null;
+        renderImportLog();
+        SALDO_INICIAL_IDS.forEach(function (fid) {
+          var el = document.getElementById(fid);
+          if (el) delete el.dataset.sign;
+          var toggle = document.querySelector('.sign-toggle[data-target="' + fid + '"]');
+          if (toggle) { toggle.textContent = '+'; toggle.classList.remove('negative'); }
+        });
+      }
+      recalc();
+      saveDraft();
       setStatus('', '');
     }
 
-    wireClearButton('btn-clear');
-    wireClearButton('btn-clear-step1');
+    wireClearButton('btn-clear', 'step2');
+    wireClearButton('btn-clear-step1', 'step1');
 
     document.getElementById('btn-img-contas').addEventListener('click', async function () {
       setStatus('', '');
@@ -2355,6 +2405,12 @@
       var state = getState();
       if (!state.loja || !state.dataAnterior) {
         setStatus('Selecione a loja e a data das movimentações antes de gerar a imagem.', 'error');
+        return;
+      }
+      var enviadoCents = Math.round((state.values.b_transf_enviado || 0) * 100);
+      var recebidoCents = Math.round((state.values.b_transf_recebido || 0) * 100);
+      if (enviadoCents !== recebidoCents) {
+        setStatus('Em TRANSFERÊNCIAS, o total enviado (' + fmt(state.values.b_transf_enviado) + ') e o total recebido (' + fmt(state.values.b_transf_recebido) + ') precisam ser iguais para baixar a imagem. Revise os extratos importados: pode faltar importar o extrato da outra conta ou classificar alguma transferência.', 'error');
         return;
       }
       var blob;
