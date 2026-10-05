@@ -511,8 +511,7 @@
     { id: 'b_e_cashback', label: 'Cashback do Cartão de Todos' },
     { id: 'b_e_pix', label: 'Vendas no pix' },
     { id: 'b_e_repasse', label: 'Repasse de fornecedor' },
-    { id: 'b_depositos', label: 'Depósitos (do cofre)', fixed: true },
-    { id: 'b_transferencias_entrada', label: 'Transferências entre contas', catLabel: 'Transferência entre contas', fixed: true }
+    { id: 'b_depositos', label: 'Depósitos (do cofre)', fixed: true }
   ];
   var BANK_SAIDA_CATS = [
     { id: 'b_boletos_dda_pago', label: 'Boletos (DDA)', fixed: true },
@@ -533,8 +532,7 @@
     { id: 'b_s_juros_iof', label: 'Juros e IOF' },
     { id: 'b_s_taxas_tarifas', label: 'Taxas e tarifas bancárias' },
     { id: 'b_s_cartao_empresarial', label: 'Cartão empresarial' },
-    { id: 'b_s_devolucoes', label: 'Devoluções de vendas' },
-    { id: 'b_transferencias_saida', label: 'Transferências entre contas', catLabel: 'Transferência entre contas', fixed: true }
+    { id: 'b_s_devolucoes', label: 'Devoluções de vendas' }
   ];
   function catsToFields(cats) {
     return cats.map(function (c) { return { id: c.id, label: c.label, locked: true, dynamic: !c.fixed }; });
@@ -1600,14 +1598,12 @@
   ];
   function catDests(cats, extraId, extraLabel) {
     return cats.map(function (c) { return { id: c.id, label: c.catLabel || c.label }; })
-      .concat([{ id: extraId, label: extraLabel }]);
+      .concat([{ id: extraId, label: extraLabel }, { id: 'ignore', label: 'Ignorar (não importar)' }]);
   }
   var OFX_ENTRADA_DESTS = catDests(BANK_ENTRADA_CATS, 'outras_entradas', 'Outras entradas');
   var OFX_SAIDA_DESTS = catDests(BANK_SAIDA_CATS, 'outras_saidas', 'Outras saídas');
   var OFX_FIELD_LABELS = {};
   BANK_ENTRADA_CATS.concat(BANK_SAIDA_CATS).forEach(function (c) { OFX_FIELD_LABELS[c.id] = c.catLabel || c.label; });
-  OFX_FIELD_LABELS.b_transferencias_entrada += ' (entrada)';
-  OFX_FIELD_LABELS.b_transferencias_saida += ' (saída)';
   var ofxTxns = [];
   var ofxSeenKeys = {};
 
@@ -2359,10 +2355,6 @@
       var state = getState();
       if (!state.loja || !state.dataAnterior) {
         setStatus('Selecione a loja e a data das movimentações antes de gerar a imagem.', 'error');
-        return;
-      }
-      if (state.values.b_transferencias_entrada !== state.values.b_transferencias_saida) {
-        setStatus('O valor de "Transferências entre contas" está diferente entre ENTRADAS (' + fmt(state.values.b_transferencias_entrada) + ') e SAÍDAS (' + fmt(state.values.b_transferencias_saida) + ') na coluna do banco. Revise os extratos importados antes de baixar a imagem.', 'error');
         return;
       }
       var blob;
